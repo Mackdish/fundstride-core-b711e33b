@@ -35,7 +35,7 @@ export function GenericListPage<T extends { id: string; status?: string }>({ con
       if (status) q = q.eq("status", status);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as T[];
+      return ((data ?? []) as unknown) as T[];
     },
   });
 
