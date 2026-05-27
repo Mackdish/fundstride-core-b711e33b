@@ -37,7 +37,7 @@ function DrawdownsPage() {
         `)
         .order("created_at", { ascending: false })
         .limit(200);
-      if (status) q = q.eq("status", status);
+      if (status) q = q.eq("status", status as any);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as Row[];

@@ -123,7 +123,7 @@ function DrawdownDetail() {
       if (vars.certified_amount !== undefined) patch.certified_amount = vars.certified_amount;
       const { error } = await supabase.from("drawdown_requests").update(patch).eq("id", id);
       if (error) throw error;
-      await logAudit({ action: vars.status, entity_type: "drawdown_request", entity_id: id, new_value: patch });
+      await logAudit(vars.status, "drawdown_request", id, null, patch);
     },
     onSuccess: (_d, vars) => {
       toast.success(`Drawdown ${vars.status === "active" ? "approved" : vars.status}`);
@@ -147,7 +147,7 @@ function DrawdownDetail() {
         created_by: user?.id,
       });
       if (error) throw error;
-      await logAudit({ action: "create_payment", entity_type: "payment", entity_id: id, new_value: payForm });
+      await logAudit("create_payment", "payment", id, null, payForm);
     },
     onSuccess: () => {
       toast.success("Payment instruction created");
