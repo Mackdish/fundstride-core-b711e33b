@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
@@ -7,7 +7,10 @@ import { ListShell, exportCsv } from "@/components/ListShell";
 import { DataTable, Column } from "@/components/DataTable";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 export interface GenericListConfig<T extends { id: string }> {
   title: string;
@@ -21,10 +24,16 @@ export interface GenericListConfig<T extends { id: string }> {
   statusField?: keyof T;
   statusOptions?: { value: string; label: string }[];
   emptyMessage?: string;
+  /** If true, staff/super_admin can delete rows from the list. */
+  deletable?: boolean;
+  /** Human label for a row, used in the delete confirm. */
+  rowLabel?: (row: T) => string;
 }
 
 export function GenericListPage<T extends { id: string; status?: string }>({ config }: { config: GenericListConfig<T> }) {
   const nav = useNavigate();
+  const qc = useQueryClient();
+  const { isStaff } = useAuth();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
 
@@ -39,9 +48,39 @@ export function GenericListPage<T extends { id: string; status?: string }>({ con
     },
   });
 
+  const del = useMutation({
+    mutationFn: async (row: T) => {
+      const { error } = await supabase.from(config.table as any).delete().eq("id", row.id);
+      if (error) throw error;
+      await logAudit("delete", config.table, row.id, row as any, null);
+    },
+    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: [config.table] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Delete failed"),
+  });
+
   const filtered = (data ?? []).filter((r: any) =>
     !search || config.searchFields.some((f) => String(r[f] ?? "").toLowerCase().includes(search.toLowerCase()))
   );
+
+  const canDelete = config.deletable && isStaff;
+  const columns: Column<T>[] = canDelete
+    ? [...config.columns, {
+        header: "", className: "w-1 text-right",
+        cell: (row) => (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const label = config.rowLabel?.(row) ?? "this record";
+              if (confirm(`Delete ${label}? This cannot be undone.`)) del.mutate(row);
+            }}
+            title="Delete"
+            className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-red-50 text-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        ),
+      }]
+    : config.columns;
 
   return (
     <>
@@ -60,7 +99,7 @@ export function GenericListPage<T extends { id: string; status?: string }>({ con
         onExport={() => exportCsv(`${config.table}.csv`, filtered as any)}
       >
         <DataTable
-          columns={config.columns}
+          columns={columns}
           rows={filtered}
           loading={isLoading}
           onRowClick={config.detailHref ? (row) => nav({ to: config.detailHref!(row) }) : undefined}
