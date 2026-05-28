@@ -9,7 +9,7 @@ export const Route = createFileRoute("/loans/")({
     <ProtectedRoute roles={["super_admin","credit_officer","finance_officer","executive"]}>
       <GenericListPage config={{
         title: "Loan facilities", description: "Active and historical loan facilities.",
-        table: "loan_facilities", searchFields: ["id"],
+        table: "loan_facilities", searchFields: ["id"], deletable: true,
         detailHref: (r: any) => `/loans/${r.id}`,
         statusOptions: [
           { value: "draft", label: "Draft" }, { value: "active", label: "Active" }, { value: "closed", label: "Closed" },

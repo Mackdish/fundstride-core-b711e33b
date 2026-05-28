@@ -8,7 +8,7 @@ export const Route = createFileRoute("/contractors/")({
     <ProtectedRoute roles={["super_admin","operations_officer","credit_officer"]}>
       <GenericListPage config={{
         title: "Contractors", description: "Approved contractor directory.",
-        table: "contractors", searchFields: ["name","specialization","registration_number"],
+        table: "contractors", searchFields: ["name","specialization","registration_number"], deletable: true,
         detailHref: (r: any) => `/contractors/${r.id}`,
         statusOptions: [{ value: "active", label: "Active" }, { value: "blocked", label: "Blocked" }],
         columns: [

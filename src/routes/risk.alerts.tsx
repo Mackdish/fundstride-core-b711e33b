@@ -9,7 +9,7 @@ export const Route = createFileRoute("/risk/alerts")({
     <ProtectedRoute roles={["super_admin","risk_compliance_officer","executive"]}>
       <GenericListPage config={{
         title: "Risk alerts", description: "Alert tracker and mitigation register.",
-        table: "risk_alerts", searchFields: ["trigger_event","entity_type"],
+        table: "risk_alerts", searchFields: ["trigger_event","entity_type"], deletable: true,
         statusOptions: [{ value: "open", label: "Open" }, { value: "closed", label: "Closed" }],
         columns: [
           { header: "Trigger", cell: (r: any) => <span className="font-medium">{r.trigger_event}</span> },

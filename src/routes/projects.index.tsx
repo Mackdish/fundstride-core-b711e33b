@@ -9,7 +9,7 @@ export const Route = createFileRoute("/projects/")({
     <ProtectedRoute>
       <GenericListPage config={{
         title: "Projects", description: "Construction projects financed by Kinetic.",
-        table: "projects", searchFields: ["name", "location"],
+        table: "projects", searchFields: ["name", "location"], deletable: true,
         newHref: "/projects/new",
         detailHref: (r: any) => `/projects/${r.id}`,
         statusOptions: [

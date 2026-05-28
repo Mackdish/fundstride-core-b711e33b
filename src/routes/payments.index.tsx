@@ -9,7 +9,7 @@ export const Route = createFileRoute("/payments/")({
     <ProtectedRoute roles={["super_admin","finance_officer"]}>
       <GenericListPage config={{
         title: "Payments", description: "Disbursement queue with dual authorization.",
-        table: "payments", searchFields: ["purpose"],
+        table: "payments", searchFields: ["purpose"], deletable: true,
         detailHref: (r: any) => `/payments/${r.id}`,
         statusOptions: [
           { value: "pending", label: "Pending" }, { value: "active", label: "Authorized" },

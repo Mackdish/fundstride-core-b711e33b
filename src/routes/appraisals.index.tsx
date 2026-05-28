@@ -9,7 +9,7 @@ export const Route = createFileRoute("/appraisals/")({
     <ProtectedRoute roles={["super_admin","credit_officer","risk_compliance_officer","executive"]}>
       <GenericListPage config={{
         title: "Appraisals", description: "Credit appraisal queue.",
-        table: "appraisals", searchFields: ["id"],
+        table: "appraisals", searchFields: ["id"], deletable: true,
         detailHref: (r: any) => `/appraisals/${r.id}`,
         statusOptions: [
           { value: "draft", label: "Draft" }, { value: "pending", label: "Pending" }, { value: "active", label: "Approved" }, { value: "rejected", label: "Rejected" },
