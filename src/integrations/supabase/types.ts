@@ -278,40 +278,94 @@ export type Database = {
       }
       contractors: {
         Row: {
+          alt_phone: string | null
+          banking: Json | null
+          consultancy_type: string | null
+          country_of_incorporation: string | null
           created_at: string
+          declaration: Json | null
           email: string | null
           id: string
+          kra_pin: string | null
           name: string
           nca_category: string | null
+          nca_registration: string | null
           phone: string | null
+          physical_address: string | null
+          postal_address: string | null
+          primary_contact: Json | null
+          professional_body_number: string | null
+          recent_project: Json | null
           registration_number: string | null
+          services: string[] | null
           specialization: string | null
           status: Database["public"]["Enums"]["entity_status"]
+          town: string | null
+          trading_name: string | null
           user_id: string | null
+          vat_number: string | null
+          website: string | null
+          year_established: number | null
         }
         Insert: {
+          alt_phone?: string | null
+          banking?: Json | null
+          consultancy_type?: string | null
+          country_of_incorporation?: string | null
           created_at?: string
+          declaration?: Json | null
           email?: string | null
           id?: string
+          kra_pin?: string | null
           name: string
           nca_category?: string | null
+          nca_registration?: string | null
           phone?: string | null
+          physical_address?: string | null
+          postal_address?: string | null
+          primary_contact?: Json | null
+          professional_body_number?: string | null
+          recent_project?: Json | null
           registration_number?: string | null
+          services?: string[] | null
           specialization?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
+          town?: string | null
+          trading_name?: string | null
           user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+          year_established?: number | null
         }
         Update: {
+          alt_phone?: string | null
+          banking?: Json | null
+          consultancy_type?: string | null
+          country_of_incorporation?: string | null
           created_at?: string
+          declaration?: Json | null
           email?: string | null
           id?: string
+          kra_pin?: string | null
           name?: string
           nca_category?: string | null
+          nca_registration?: string | null
           phone?: string | null
+          physical_address?: string | null
+          postal_address?: string | null
+          primary_contact?: Json | null
+          professional_body_number?: string | null
+          recent_project?: Json | null
           registration_number?: string | null
+          services?: string[] | null
           specialization?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
+          town?: string | null
+          trading_name?: string | null
           user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+          year_established?: number | null
         }
         Relationships: []
       }
@@ -441,48 +495,96 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          business_entity: Json | null
           created_at: string
           created_by: string | null
+          current_address: string | null
           customer_type: string
           email: string | null
+          employment: Json | null
+          estate: string | null
+          first_name: string | null
+          house_no: string | null
           id: string
+          marital_status: string | null
+          middle_name: string | null
+          mobile: string | null
           name: string
+          national_id: string | null
+          next_of_kin: Json | null
           owner_user_id: string | null
           phone: string | null
           pin: string | null
+          postal_address: string | null
+          postal_code: string | null
+          property: Json | null
           registration_number: string | null
+          residence_type: string | null
           sector: string | null
           status: Database["public"]["Enums"]["entity_status"]
+          surname: string | null
         }
         Insert: {
           address?: string | null
+          business_entity?: Json | null
           created_at?: string
           created_by?: string | null
+          current_address?: string | null
           customer_type?: string
           email?: string | null
+          employment?: Json | null
+          estate?: string | null
+          first_name?: string | null
+          house_no?: string | null
           id?: string
+          marital_status?: string | null
+          middle_name?: string | null
+          mobile?: string | null
           name: string
+          national_id?: string | null
+          next_of_kin?: Json | null
           owner_user_id?: string | null
           phone?: string | null
           pin?: string | null
+          postal_address?: string | null
+          postal_code?: string | null
+          property?: Json | null
           registration_number?: string | null
+          residence_type?: string | null
           sector?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
+          surname?: string | null
         }
         Update: {
           address?: string | null
+          business_entity?: Json | null
           created_at?: string
           created_by?: string | null
+          current_address?: string | null
           customer_type?: string
           email?: string | null
+          employment?: Json | null
+          estate?: string | null
+          first_name?: string | null
+          house_no?: string | null
           id?: string
+          marital_status?: string | null
+          middle_name?: string | null
+          mobile?: string | null
           name?: string
+          national_id?: string | null
+          next_of_kin?: Json | null
           owner_user_id?: string | null
           phone?: string | null
           pin?: string | null
+          postal_address?: string | null
+          postal_code?: string | null
+          property?: Json | null
           registration_number?: string | null
+          residence_type?: string | null
           sector?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
+          surname?: string | null
         }
         Relationships: []
       }
@@ -857,49 +959,109 @@ export type Database = {
       }
       projects: {
         Row: {
+          approvals: Json | null
+          built_up_area: string | null
+          client_contact_person: string | null
+          client_email: string | null
+          client_equity: number | null
+          client_physical_address: string | null
+          client_postal_address: string | null
+          client_telephone: string | null
+          construction_methodology: string | null
+          consultants: Json | null
+          county: string | null
           created_at: string
           created_by: string | null
           customer_id: string
           end_date: string | null
+          expected_monthly_disbursement: number | null
           expected_value: number | null
+          floors: number | null
           gps_lat: number | null
           gps_lng: number | null
           id: string
+          insurance_requirements: string | null
+          key_deliverables: string | null
+          loan_facility_amount: number | null
           location: string | null
           name: string
+          nature_of_development: string | null
           project_type: string | null
+          reference_number: string | null
+          risks: Json | null
+          source_of_funding: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["entity_status"]
           units: number | null
         }
         Insert: {
+          approvals?: Json | null
+          built_up_area?: string | null
+          client_contact_person?: string | null
+          client_email?: string | null
+          client_equity?: number | null
+          client_physical_address?: string | null
+          client_postal_address?: string | null
+          client_telephone?: string | null
+          construction_methodology?: string | null
+          consultants?: Json | null
+          county?: string | null
           created_at?: string
           created_by?: string | null
           customer_id: string
           end_date?: string | null
+          expected_monthly_disbursement?: number | null
           expected_value?: number | null
+          floors?: number | null
           gps_lat?: number | null
           gps_lng?: number | null
           id?: string
+          insurance_requirements?: string | null
+          key_deliverables?: string | null
+          loan_facility_amount?: number | null
           location?: string | null
           name: string
+          nature_of_development?: string | null
           project_type?: string | null
+          reference_number?: string | null
+          risks?: Json | null
+          source_of_funding?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           units?: number | null
         }
         Update: {
+          approvals?: Json | null
+          built_up_area?: string | null
+          client_contact_person?: string | null
+          client_email?: string | null
+          client_equity?: number | null
+          client_physical_address?: string | null
+          client_postal_address?: string | null
+          client_telephone?: string | null
+          construction_methodology?: string | null
+          consultants?: Json | null
+          county?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string
           end_date?: string | null
+          expected_monthly_disbursement?: number | null
           expected_value?: number | null
+          floors?: number | null
           gps_lat?: number | null
           gps_lng?: number | null
           id?: string
+          insurance_requirements?: string | null
+          key_deliverables?: string | null
+          loan_facility_amount?: number | null
           location?: string | null
           name?: string
+          nature_of_development?: string | null
           project_type?: string | null
+          reference_number?: string | null
+          risks?: Json | null
+          source_of_funding?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           units?: number | null
