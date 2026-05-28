@@ -33,6 +33,7 @@ import { Route as LoansIdRouteImport } from './routes/loans.$id'
 import { Route as DrawdownsIdRouteImport } from './routes/drawdowns.$id'
 import { Route as CustomersNewRouteImport } from './routes/customers.new'
 import { Route as CustomersIdRouteImport } from './routes/customers.$id'
+import { Route as ContractorsNewRouteImport } from './routes/contractors.new'
 import { Route as ContractorsIdRouteImport } from './routes/contractors.$id'
 import { Route as AppraisalsIdRouteImport } from './routes/appraisals.$id'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -159,6 +160,11 @@ const CustomersIdRoute = CustomersIdRouteImport.update({
   path: '/customers/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContractorsNewRoute = ContractorsNewRouteImport.update({
+  id: '/contractors/new',
+  path: '/contractors/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContractorsIdRoute = ContractorsIdRouteImport.update({
   id: '/contractors/$id',
   path: '/contractors/$id',
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
+  '/contractors/new': typeof ContractorsNewRoute
   '/customers/$id': typeof CustomersIdRoute
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
+  '/contractors/new': typeof ContractorsNewRoute
   '/customers/$id': typeof CustomersIdRoute
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
+  '/contractors/new': typeof ContractorsNewRoute
   '/customers/$id': typeof CustomersIdRoute
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
+    | '/contractors/new'
     | '/customers/$id'
     | '/customers/new'
     | '/drawdowns/$id'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
+    | '/contractors/new'
     | '/customers/$id'
     | '/customers/new'
     | '/drawdowns/$id'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
+    | '/contractors/new'
     | '/customers/$id'
     | '/customers/new'
     | '/drawdowns/$id'
@@ -387,6 +399,7 @@ export interface RootRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   AppraisalsIdRoute: typeof AppraisalsIdRoute
   ContractorsIdRoute: typeof ContractorsIdRoute
+  ContractorsNewRoute: typeof ContractorsNewRoute
   CustomersIdRoute: typeof CustomersIdRoute
   CustomersNewRoute: typeof CustomersNewRoute
   DrawdownsIdRoute: typeof DrawdownsIdRoute
@@ -577,6 +590,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contractors/new': {
+      id: '/contractors/new'
+      path: '/contractors/new'
+      fullPath: '/contractors/new'
+      preLoaderRoute: typeof ContractorsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contractors/$id': {
       id: '/contractors/$id'
       path: '/contractors/$id'
@@ -627,6 +647,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   AppraisalsIdRoute: AppraisalsIdRoute,
   ContractorsIdRoute: ContractorsIdRoute,
+  ContractorsNewRoute: ContractorsNewRoute,
   CustomersIdRoute: CustomersIdRoute,
   CustomersNewRoute: CustomersNewRoute,
   DrawdownsIdRoute: DrawdownsIdRoute,
