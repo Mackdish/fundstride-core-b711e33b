@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+import { EditDeleteBar } from "@/components/EditDeleteBar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatKES, formatDate } from "@/lib/format";
 
@@ -28,7 +29,25 @@ function ProjectDetail() {
   const p: any = data.p;
   return (
     <>
-      <PageHeader title={p.name} description={`${p.customers?.name ?? "—"} · ${p.location ?? "—"}`} actions={<StatusBadge status={p.status} />} />
+      <PageHeader title={p.name} description={`${p.customers?.name ?? "—"} · ${p.location ?? "—"}`} actions={
+        <div className="flex items-center gap-3">
+          <StatusBadge status={p.status} />
+          <EditDeleteBar
+            table="projects" id={p.id} row={p} queryKey={["project", id]}
+            redirectAfterDelete="/projects"
+            fields={[
+              { key: "name", label: "Project name" },
+              { key: "status", label: "Status", type: "select", options: ["draft","pending","active","completed","rejected"] },
+              { key: "project_type", label: "Type" },
+              { key: "location", label: "Location" },
+              { key: "units", label: "Units", type: "number" },
+              { key: "expected_value", label: "Expected value (KES)", type: "number" },
+              { key: "start_date", label: "Start date", type: "date" },
+              { key: "end_date", label: "End date", type: "date" },
+            ]}
+          />
+        </div>
+      } />
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-2">
           <h3 className="font-semibold text-slate-900 mb-2">Overview</h3>

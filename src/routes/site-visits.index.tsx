@@ -9,7 +9,7 @@ export const Route = createFileRoute("/site-visits/")({
     <ProtectedRoute roles={["super_admin","site_monitoring_officer","operations_officer","credit_officer"]}>
       <GenericListPage config={{
         title: "Site visits", description: "Field inspection reports and observations.",
-        table: "site_visits", searchFields: ["observations","weather"],
+        table: "site_visits", searchFields: ["observations","weather"], deletable: true,
         detailHref: (r: any) => `/site-visits/${r.id}`,
         columns: [
           { header: "Visit date", cell: (r: any) => formatDate(r.visit_date) },
