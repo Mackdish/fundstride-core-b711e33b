@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+import { EditDeleteBar } from "@/components/EditDeleteBar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
+
 
 export const Route = createFileRoute("/customers/$id")({
   component: () => <ProtectedRoute><CustomerDetail /></ProtectedRoute>,
@@ -28,7 +30,26 @@ function CustomerDetail() {
   const c: any = data.customer;
   return (
     <>
-      <PageHeader title={c.name} description={`${c.customer_type} · ${c.sector ?? "—"}`} actions={<StatusBadge status={c.status} />} />
+      <PageHeader title={c.name} description={`${c.customer_type} · ${c.sector ?? "—"}`} actions={
+        <div className="flex items-center gap-3">
+          <StatusBadge status={c.status} />
+          <EditDeleteBar
+            table="customers" id={c.id} row={c} queryKey={["customer", id]}
+            redirectAfterDelete="/customers"
+            fields={[
+              { key: "name", label: "Legal name" },
+              { key: "customer_type", label: "Type", type: "select", options: ["corporate", "individual"] },
+              { key: "status", label: "Status", type: "select", options: ["draft","pending","active","rejected","completed"] },
+              { key: "pin", label: "KRA PIN" },
+              { key: "registration_number", label: "Registration number" },
+              { key: "email", label: "Email", type: "email" },
+              { key: "phone", label: "Phone" },
+              { key: "sector", label: "Sector" },
+              { key: "address", label: "Address", type: "textarea" },
+            ]}
+          />
+        </div>
+      } />
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <h3 className="font-semibold text-slate-900">Company info</h3>
