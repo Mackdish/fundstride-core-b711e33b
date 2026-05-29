@@ -19,16 +19,20 @@ import { Route as SiteVisitsIndexRouteImport } from './routes/site-visits.index'
 import { Route as RiskIndexRouteImport } from './routes/risk.index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as PaymentsIndexRouteImport } from './routes/payments.index'
+import { Route as MonitoringIndexRouteImport } from './routes/monitoring.index'
 import { Route as LoansIndexRouteImport } from './routes/loans.index'
 import { Route as DrawdownsIndexRouteImport } from './routes/drawdowns.index'
 import { Route as CustomersIndexRouteImport } from './routes/customers.index'
 import { Route as ContractorsIndexRouteImport } from './routes/contractors.index'
 import { Route as AppraisalsIndexRouteImport } from './routes/appraisals.index'
+import { Route as SiteVisitsNewRouteImport } from './routes/site-visits.new'
 import { Route as SiteVisitsIdRouteImport } from './routes/site-visits.$id'
 import { Route as RiskAlertsRouteImport } from './routes/risk.alerts'
 import { Route as ProjectsNewRouteImport } from './routes/projects.new'
 import { Route as ProjectsIdRouteImport } from './routes/projects.$id'
 import { Route as PaymentsIdRouteImport } from './routes/payments.$id'
+import { Route as MonitoringNewRouteImport } from './routes/monitoring.new'
+import { Route as LoansNewRouteImport } from './routes/loans.new'
 import { Route as LoansIdRouteImport } from './routes/loans.$id'
 import { Route as DrawdownsIdRouteImport } from './routes/drawdowns.$id'
 import { Route as CustomersNewRouteImport } from './routes/customers.new'
@@ -90,6 +94,11 @@ const PaymentsIndexRoute = PaymentsIndexRouteImport.update({
   path: '/payments/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MonitoringIndexRoute = MonitoringIndexRouteImport.update({
+  id: '/monitoring/',
+  path: '/monitoring/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoansIndexRoute = LoansIndexRouteImport.update({
   id: '/loans/',
   path: '/loans/',
@@ -115,6 +124,11 @@ const AppraisalsIndexRoute = AppraisalsIndexRouteImport.update({
   path: '/appraisals/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SiteVisitsNewRoute = SiteVisitsNewRouteImport.update({
+  id: '/site-visits/new',
+  path: '/site-visits/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SiteVisitsIdRoute = SiteVisitsIdRouteImport.update({
   id: '/site-visits/$id',
   path: '/site-visits/$id',
@@ -138,6 +152,16 @@ const ProjectsIdRoute = ProjectsIdRouteImport.update({
 const PaymentsIdRoute = PaymentsIdRouteImport.update({
   id: '/payments/$id',
   path: '/payments/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonitoringNewRoute = MonitoringNewRouteImport.update({
+  id: '/monitoring/new',
+  path: '/monitoring/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoansNewRoute = LoansNewRouteImport.update({
+  id: '/loans/new',
+  path: '/loans/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoansIdRoute = LoansIdRouteImport.update({
@@ -208,16 +232,20 @@ export interface FileRoutesByFullPath {
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
   '/loans/$id': typeof LoansIdRoute
+  '/loans/new': typeof LoansNewRoute
+  '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
+  '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals/': typeof AppraisalsIndexRoute
   '/contractors/': typeof ContractorsIndexRoute
   '/customers/': typeof CustomersIndexRoute
   '/drawdowns/': typeof DrawdownsIndexRoute
   '/loans/': typeof LoansIndexRoute
+  '/monitoring/': typeof MonitoringIndexRoute
   '/payments/': typeof PaymentsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/risk/': typeof RiskIndexRoute
@@ -240,16 +268,20 @@ export interface FileRoutesByTo {
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
   '/loans/$id': typeof LoansIdRoute
+  '/loans/new': typeof LoansNewRoute
+  '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
+  '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals': typeof AppraisalsIndexRoute
   '/contractors': typeof ContractorsIndexRoute
   '/customers': typeof CustomersIndexRoute
   '/drawdowns': typeof DrawdownsIndexRoute
   '/loans': typeof LoansIndexRoute
+  '/monitoring': typeof MonitoringIndexRoute
   '/payments': typeof PaymentsIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/risk': typeof RiskIndexRoute
@@ -273,16 +305,20 @@ export interface FileRoutesById {
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
   '/loans/$id': typeof LoansIdRoute
+  '/loans/new': typeof LoansNewRoute
+  '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
+  '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals/': typeof AppraisalsIndexRoute
   '/contractors/': typeof ContractorsIndexRoute
   '/customers/': typeof CustomersIndexRoute
   '/drawdowns/': typeof DrawdownsIndexRoute
   '/loans/': typeof LoansIndexRoute
+  '/monitoring/': typeof MonitoringIndexRoute
   '/payments/': typeof PaymentsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/risk/': typeof RiskIndexRoute
@@ -307,16 +343,20 @@ export interface FileRouteTypes {
     | '/customers/new'
     | '/drawdowns/$id'
     | '/loans/$id'
+    | '/loans/new'
+    | '/monitoring/new'
     | '/payments/$id'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
     | '/site-visits/$id'
+    | '/site-visits/new'
     | '/appraisals/'
     | '/contractors/'
     | '/customers/'
     | '/drawdowns/'
     | '/loans/'
+    | '/monitoring/'
     | '/payments/'
     | '/projects/'
     | '/risk/'
@@ -339,16 +379,20 @@ export interface FileRouteTypes {
     | '/customers/new'
     | '/drawdowns/$id'
     | '/loans/$id'
+    | '/loans/new'
+    | '/monitoring/new'
     | '/payments/$id'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
     | '/site-visits/$id'
+    | '/site-visits/new'
     | '/appraisals'
     | '/contractors'
     | '/customers'
     | '/drawdowns'
     | '/loans'
+    | '/monitoring'
     | '/payments'
     | '/projects'
     | '/risk'
@@ -371,16 +415,20 @@ export interface FileRouteTypes {
     | '/customers/new'
     | '/drawdowns/$id'
     | '/loans/$id'
+    | '/loans/new'
+    | '/monitoring/new'
     | '/payments/$id'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
     | '/site-visits/$id'
+    | '/site-visits/new'
     | '/appraisals/'
     | '/contractors/'
     | '/customers/'
     | '/drawdowns/'
     | '/loans/'
+    | '/monitoring/'
     | '/payments/'
     | '/projects/'
     | '/risk/'
@@ -404,16 +452,20 @@ export interface RootRouteChildren {
   CustomersNewRoute: typeof CustomersNewRoute
   DrawdownsIdRoute: typeof DrawdownsIdRoute
   LoansIdRoute: typeof LoansIdRoute
+  LoansNewRoute: typeof LoansNewRoute
+  MonitoringNewRoute: typeof MonitoringNewRoute
   PaymentsIdRoute: typeof PaymentsIdRoute
   ProjectsIdRoute: typeof ProjectsIdRoute
   ProjectsNewRoute: typeof ProjectsNewRoute
   RiskAlertsRoute: typeof RiskAlertsRoute
   SiteVisitsIdRoute: typeof SiteVisitsIdRoute
+  SiteVisitsNewRoute: typeof SiteVisitsNewRoute
   AppraisalsIndexRoute: typeof AppraisalsIndexRoute
   ContractorsIndexRoute: typeof ContractorsIndexRoute
   CustomersIndexRoute: typeof CustomersIndexRoute
   DrawdownsIndexRoute: typeof DrawdownsIndexRoute
   LoansIndexRoute: typeof LoansIndexRoute
+  MonitoringIndexRoute: typeof MonitoringIndexRoute
   PaymentsIndexRoute: typeof PaymentsIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   RiskIndexRoute: typeof RiskIndexRoute
@@ -492,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/monitoring/': {
+      id: '/monitoring/'
+      path: '/monitoring'
+      fullPath: '/monitoring/'
+      preLoaderRoute: typeof MonitoringIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/loans/': {
       id: '/loans/'
       path: '/loans'
@@ -527,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppraisalsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/site-visits/new': {
+      id: '/site-visits/new'
+      path: '/site-visits/new'
+      fullPath: '/site-visits/new'
+      preLoaderRoute: typeof SiteVisitsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/site-visits/$id': {
       id: '/site-visits/$id'
       path: '/site-visits/$id'
@@ -560,6 +626,20 @@ declare module '@tanstack/react-router' {
       path: '/payments/$id'
       fullPath: '/payments/$id'
       preLoaderRoute: typeof PaymentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/monitoring/new': {
+      id: '/monitoring/new'
+      path: '/monitoring/new'
+      fullPath: '/monitoring/new'
+      preLoaderRoute: typeof MonitoringNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loans/new': {
+      id: '/loans/new'
+      path: '/loans/new'
+      fullPath: '/loans/new'
+      preLoaderRoute: typeof LoansNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/loans/$id': {
@@ -652,16 +732,20 @@ const rootRouteChildren: RootRouteChildren = {
   CustomersNewRoute: CustomersNewRoute,
   DrawdownsIdRoute: DrawdownsIdRoute,
   LoansIdRoute: LoansIdRoute,
+  LoansNewRoute: LoansNewRoute,
+  MonitoringNewRoute: MonitoringNewRoute,
   PaymentsIdRoute: PaymentsIdRoute,
   ProjectsIdRoute: ProjectsIdRoute,
   ProjectsNewRoute: ProjectsNewRoute,
   RiskAlertsRoute: RiskAlertsRoute,
   SiteVisitsIdRoute: SiteVisitsIdRoute,
+  SiteVisitsNewRoute: SiteVisitsNewRoute,
   AppraisalsIndexRoute: AppraisalsIndexRoute,
   ContractorsIndexRoute: ContractorsIndexRoute,
   CustomersIndexRoute: CustomersIndexRoute,
   DrawdownsIndexRoute: DrawdownsIndexRoute,
   LoansIndexRoute: LoansIndexRoute,
+  MonitoringIndexRoute: MonitoringIndexRoute,
   PaymentsIndexRoute: PaymentsIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   RiskIndexRoute: RiskIndexRoute,
