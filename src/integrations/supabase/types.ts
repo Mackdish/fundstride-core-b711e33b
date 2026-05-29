@@ -16,44 +16,95 @@ export type Database = {
     Tables: {
       appraisals: {
         Row: {
+          analyst_recommendation: Json | null
+          capacity_data: Json | null
+          capacity_score: number | null
+          capital_data: Json | null
+          capital_score: number | null
+          character_data: Json | null
+          character_score: number | null
+          collateral_data: Json | null
+          collateral_score: number | null
+          committee_decision: Json | null
+          conditions_data: Json | null
+          conditions_score: number | null
+          construction_data: Json | null
+          construction_risk_score: number | null
           created_at: string
           created_by: string | null
           customer_id: string
           dscr: number | null
+          executive_summary: Json | null
           grade: Database["public"]["Enums"]["risk_grade"] | null
           id: string
+          ifrs9_data: Json | null
           ltv: number | null
           project_id: string
           recommended_amount: number | null
           requested_amount: number | null
+          risk_data: Json | null
           score: number | null
           status: Database["public"]["Enums"]["entity_status"]
         }
         Insert: {
+          analyst_recommendation?: Json | null
+          capacity_data?: Json | null
+          capacity_score?: number | null
+          capital_data?: Json | null
+          capital_score?: number | null
+          character_data?: Json | null
+          character_score?: number | null
+          collateral_data?: Json | null
+          collateral_score?: number | null
+          committee_decision?: Json | null
+          conditions_data?: Json | null
+          conditions_score?: number | null
+          construction_data?: Json | null
+          construction_risk_score?: number | null
           created_at?: string
           created_by?: string | null
           customer_id: string
           dscr?: number | null
+          executive_summary?: Json | null
           grade?: Database["public"]["Enums"]["risk_grade"] | null
           id?: string
+          ifrs9_data?: Json | null
           ltv?: number | null
           project_id: string
           recommended_amount?: number | null
           requested_amount?: number | null
+          risk_data?: Json | null
           score?: number | null
           status?: Database["public"]["Enums"]["entity_status"]
         }
         Update: {
+          analyst_recommendation?: Json | null
+          capacity_data?: Json | null
+          capacity_score?: number | null
+          capital_data?: Json | null
+          capital_score?: number | null
+          character_data?: Json | null
+          character_score?: number | null
+          collateral_data?: Json | null
+          collateral_score?: number | null
+          committee_decision?: Json | null
+          conditions_data?: Json | null
+          conditions_score?: number | null
+          construction_data?: Json | null
+          construction_risk_score?: number | null
           created_at?: string
           created_by?: string | null
           customer_id?: string
           dscr?: number | null
+          executive_summary?: Json | null
           grade?: Database["public"]["Enums"]["risk_grade"] | null
           id?: string
+          ifrs9_data?: Json | null
           ltv?: number | null
           project_id?: string
           recommended_amount?: number | null
           requested_amount?: number | null
+          risk_data?: Json | null
           score?: number | null
           status?: Database["public"]["Enums"]["entity_status"]
         }
@@ -407,6 +458,90 @@ export type Database = {
           },
         ]
       }
+      credit_monitoring_reports: {
+        Row: {
+          arrears_amount: number | null
+          business_progress: Json | null
+          collateral_status: Json | null
+          created_at: string
+          customer_id: string | null
+          days_past_due: number | null
+          engagement_notes: Json | null
+          id: string
+          loan_id: string
+          missed_installments: number | null
+          officer_recommendation: string | null
+          payment_trend: string | null
+          performance: Json | null
+          prepared_by: string | null
+          project_id: string | null
+          recommended_actions: string[] | null
+          relationship_officer: string | null
+          repayment_concerns: string | null
+          repayment_status: string | null
+          report_date: string
+          reviewed_by: string | null
+          risk_assessment: Json | null
+          status: string
+          updated_at: string
+          warning_indicators: string[] | null
+        }
+        Insert: {
+          arrears_amount?: number | null
+          business_progress?: Json | null
+          collateral_status?: Json | null
+          created_at?: string
+          customer_id?: string | null
+          days_past_due?: number | null
+          engagement_notes?: Json | null
+          id?: string
+          loan_id: string
+          missed_installments?: number | null
+          officer_recommendation?: string | null
+          payment_trend?: string | null
+          performance?: Json | null
+          prepared_by?: string | null
+          project_id?: string | null
+          recommended_actions?: string[] | null
+          relationship_officer?: string | null
+          repayment_concerns?: string | null
+          repayment_status?: string | null
+          report_date?: string
+          reviewed_by?: string | null
+          risk_assessment?: Json | null
+          status?: string
+          updated_at?: string
+          warning_indicators?: string[] | null
+        }
+        Update: {
+          arrears_amount?: number | null
+          business_progress?: Json | null
+          collateral_status?: Json | null
+          created_at?: string
+          customer_id?: string | null
+          days_past_due?: number | null
+          engagement_notes?: Json | null
+          id?: string
+          loan_id?: string
+          missed_installments?: number | null
+          officer_recommendation?: string | null
+          payment_trend?: string | null
+          performance?: Json | null
+          prepared_by?: string | null
+          project_id?: string | null
+          recommended_actions?: string[] | null
+          relationship_officer?: string | null
+          repayment_concerns?: string | null
+          repayment_status?: string | null
+          report_date?: string
+          reviewed_by?: string | null
+          risk_assessment?: Json | null
+          status?: string
+          updated_at?: string
+          warning_indicators?: string[] | null
+        }
+        Relationships: []
+      }
       customer_directors: {
         Row: {
           created_at: string
@@ -758,41 +893,71 @@ export type Database = {
       }
       loan_facilities: {
         Row: {
+          account_number: string | null
           activated_at: string | null
           appraisal_id: string
           approved_amount: number
           created_at: string
+          customer_id: string | null
+          equity_contribution: number | null
           id: string
           insurance: number | null
           interest_rate: number
+          loan_purpose: string | null
           processing_fee: number | null
+          product_type: string | null
+          project_id: string | null
+          recommended_amount: number | null
+          relationship_manager: string | null
           repayment_frequency: string
+          requested_amount: number | null
+          security_offered: string | null
           status: Database["public"]["Enums"]["entity_status"]
           tenor_months: number
         }
         Insert: {
+          account_number?: string | null
           activated_at?: string | null
           appraisal_id: string
           approved_amount: number
           created_at?: string
+          customer_id?: string | null
+          equity_contribution?: number | null
           id?: string
           insurance?: number | null
           interest_rate: number
+          loan_purpose?: string | null
           processing_fee?: number | null
+          product_type?: string | null
+          project_id?: string | null
+          recommended_amount?: number | null
+          relationship_manager?: string | null
           repayment_frequency?: string
+          requested_amount?: number | null
+          security_offered?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           tenor_months: number
         }
         Update: {
+          account_number?: string | null
           activated_at?: string | null
           appraisal_id?: string
           approved_amount?: number
           created_at?: string
+          customer_id?: string | null
+          equity_contribution?: number | null
           id?: string
           insurance?: number | null
           interest_rate?: number
+          loan_purpose?: string | null
           processing_fee?: number | null
+          product_type?: string | null
+          project_id?: string | null
+          recommended_amount?: number | null
+          relationship_manager?: string | null
           repayment_frequency?: string
+          requested_amount?: number | null
+          security_offered?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
           tenor_months?: number
         }
@@ -1264,40 +1429,91 @@ export type Database = {
       }
       site_visits: {
         Row: {
+          action_tracker: Json | null
+          actual_progress_pct: number | null
+          contractor_scorecard: Json | null
           created_at: string
+          drawdown_recommendation: string | null
+          drawdown_request_id: string | null
+          engineer_qs: string | null
           gps_lat: number | null
           gps_lng: number | null
+          hse_compliance: Json | null
           id: string
+          loan_id: string | null
           observations: string | null
           officer_id: string | null
+          planned_progress_pct: number | null
           project_id: string
+          purpose: string | null
+          qs_assessment: Json | null
+          quality_checklist: Json | null
+          recommendation_details: string | null
+          risk_matrix: Json | null
           status: string
           visit_date: string
           weather: string | null
+          works_completed: string | null
+          works_ongoing: string | null
+          works_pending: string | null
         }
         Insert: {
+          action_tracker?: Json | null
+          actual_progress_pct?: number | null
+          contractor_scorecard?: Json | null
           created_at?: string
+          drawdown_recommendation?: string | null
+          drawdown_request_id?: string | null
+          engineer_qs?: string | null
           gps_lat?: number | null
           gps_lng?: number | null
+          hse_compliance?: Json | null
           id?: string
+          loan_id?: string | null
           observations?: string | null
           officer_id?: string | null
+          planned_progress_pct?: number | null
           project_id: string
+          purpose?: string | null
+          qs_assessment?: Json | null
+          quality_checklist?: Json | null
+          recommendation_details?: string | null
+          risk_matrix?: Json | null
           status?: string
           visit_date: string
           weather?: string | null
+          works_completed?: string | null
+          works_ongoing?: string | null
+          works_pending?: string | null
         }
         Update: {
+          action_tracker?: Json | null
+          actual_progress_pct?: number | null
+          contractor_scorecard?: Json | null
           created_at?: string
+          drawdown_recommendation?: string | null
+          drawdown_request_id?: string | null
+          engineer_qs?: string | null
           gps_lat?: number | null
           gps_lng?: number | null
+          hse_compliance?: Json | null
           id?: string
+          loan_id?: string | null
           observations?: string | null
           officer_id?: string | null
+          planned_progress_pct?: number | null
           project_id?: string
+          purpose?: string | null
+          qs_assessment?: Json | null
+          quality_checklist?: Json | null
+          recommendation_details?: string | null
+          risk_matrix?: Json | null
           status?: string
           visit_date?: string
           weather?: string | null
+          works_completed?: string | null
+          works_ongoing?: string | null
+          works_pending?: string | null
         }
         Relationships: [
           {
