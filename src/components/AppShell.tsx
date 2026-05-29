@@ -19,6 +19,7 @@ const NAV: NavItem[] = [
   { to: "/contractors", label: "Contractors", icon: HardHat, roles: ["super_admin","operations_officer","credit_officer"] },
   { to: "/payments", label: "Payments", icon: CreditCard, roles: ["super_admin","finance_officer"] },
   { to: "/risk", label: "Risk", icon: ShieldAlert, roles: ["super_admin","risk_compliance_officer","executive"] },
+  { to: "/monitoring", label: "Credit Monitoring", icon: FileCheck2, roles: ["super_admin","credit_officer","risk_compliance_officer","executive"] },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/analytics", label: "Analytics", icon: BarChart3, roles: ["super_admin","executive"] },
   { to: "/admin/users", label: "Users", icon: Users, roles: ["super_admin"] },
