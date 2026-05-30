@@ -6,10 +6,13 @@ export type AppRole =
   | "super_admin" | "credit_officer" | "operations_officer" | "site_monitoring_officer"
   | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor" | "executive";
 
+export type Tenant = { id: string; name: string; currency: string };
+
 interface AuthCtx {
   user: User | null;
   session: Session | null;
   roles: AppRole[];
+  tenant: Tenant | null;
   loading: boolean;
   signOut: () => Promise<void>;
   hasRole: (...r: AppRole[]) => boolean;
@@ -17,7 +20,7 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx>({
-  user: null, session: null, roles: [], loading: true,
+  user: null, session: null, roles: [], tenant: null, loading: true,
   signOut: async () => {}, hasRole: () => false, isStaff: false,
 });
 
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,25 +41,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(() => loadRoles(sess.user.id), 0);
+        setTimeout(() => loadContext(sess.user.id), 0);
       } else {
-        setRoles([]);
+        setRoles([]); setTenant(null);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      if (data.session?.user) loadRoles(data.session.user.id).finally(() => setLoading(false));
+      if (data.session?.user) loadContext(data.session.user.id).finally(() => setLoading(false));
       else setLoading(false);
     });
 
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  async function loadRoles(uid: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    setRoles((data ?? []).map((r: any) => r.role as AppRole));
+  async function loadContext(uid: string) {
+    const [{ data: rs }, { data: profile }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
+    ]);
+    setRoles((rs ?? []).map((r: any) => r.role as AppRole));
+    if (profile?.tenant_id) {
+      const { data: t } = await supabase.from("tenants")
+        .select("id,name,currency").eq("id", profile.tenant_id).maybeSingle();
+      if (t) setTenant(t as Tenant);
+    }
     setLoading(false);
   }
 
@@ -64,12 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      user, session, roles, loading,
+      user, session, roles, tenant, loading,
       signOut: async () => { await supabase.auth.signOut(); },
       hasRole, isStaff,
     }}>{children}</Ctx.Provider>
   );
 }
+
 
 export const useAuth = () => useContext(Ctx);
 

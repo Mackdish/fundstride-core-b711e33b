@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as DocumentsRouteImport } from './routes/documents'
@@ -44,6 +45,11 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 
+const PerformanceRoute = PerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/forbidden'
     | '/login'
+    | '/performance'
     | '/admin/audit-log'
     | '/admin/settings'
     | '/admin/users'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/forbidden'
     | '/login'
+    | '/performance'
     | '/admin/audit-log'
     | '/admin/settings'
     | '/admin/users'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/forbidden'
     | '/login'
+    | '/performance'
     | '/admin/audit-log'
     | '/admin/settings'
     | '/admin/users'
@@ -442,6 +454,7 @@ export interface RootRouteChildren {
   DocumentsRoute: typeof DocumentsRoute
   ForbiddenRoute: typeof ForbiddenRoute
   LoginRoute: typeof LoginRoute
+  PerformanceRoute: typeof PerformanceRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -474,6 +487,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/performance': {
+      id: '/performance'
+      path: '/performance'
+      fullPath: '/performance'
+      preLoaderRoute: typeof PerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -722,6 +742,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentsRoute: DocumentsRoute,
   ForbiddenRoute: ForbiddenRoute,
   LoginRoute: LoginRoute,
+  PerformanceRoute: PerformanceRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -754,13 +775,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

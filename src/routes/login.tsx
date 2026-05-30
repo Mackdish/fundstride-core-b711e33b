@@ -13,6 +13,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (!loading && user) nav({ to: "/dashboard" }); }, [user, loading, nav]);
@@ -26,18 +27,23 @@ function Login() {
         if (error) throw error;
         toast.success("Welcome back");
       } else {
+        if (!companyName.trim()) throw new Error("Company name is required");
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: { full_name: fullName } },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { full_name: fullName, company_name: companyName.trim() },
+          },
         });
         if (error) throw error;
-        toast.success("Account created. Signing you in…");
+        toast.success(`Company "${companyName}" created. You're its super admin.`);
       }
       nav({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message ?? "Authentication failed");
     } finally { setBusy(false); }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1E3A5F] to-[#2D5F8A] p-4">
@@ -49,15 +55,22 @@ function Login() {
             <div className="text-xs text-slate-500">Kinetic Investment Ventures · CFMS</div>
           </div>
         </div>
-        <h1 className="text-xl font-semibold text-slate-900">{mode === "signin" ? "Sign in" : "Create your account"}</h1>
-        <p className="text-sm text-slate-500 mb-6">{mode === "signin" ? "Access your portal." : "Register to request access."}</p>
+        <h1 className="text-xl font-semibold text-slate-900">{mode === "signin" ? "Sign in" : "Create your company"}</h1>
+        <p className="text-sm text-slate-500 mb-6">{mode === "signin" ? "Access your portal." : "You'll become the super admin of a new workspace."}</p>
         <form onSubmit={submit} className="space-y-4">
           {mode === "signup" && (
-            <div>
-              <label className="text-sm text-slate-700">Full name</label>
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
-            </div>
+            <>
+              <div>
+                <label className="text-sm text-slate-700">Company name</label>
+                <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required placeholder="Acme Construction Finance" className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-700">Your full name</label>
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
+              </div>
+            </>
           )}
+
           <div>
             <label className="text-sm text-slate-700">Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
