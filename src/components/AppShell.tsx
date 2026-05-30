@@ -10,6 +10,7 @@ import {
 type NavItem = { to: string; label: string; icon: any; roles?: AppRole[] };
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/performance", label: "Financial Performance", icon: BarChart3, roles: ["super_admin","executive","finance_officer","risk_compliance_officer"] },
   { to: "/customers", label: "Customers", icon: Users, roles: ["super_admin","credit_officer","operations_officer"] },
   { to: "/projects", label: "Projects", icon: Building2 },
   { to: "/appraisals", label: "Appraisals", icon: FileCheck2, roles: ["super_admin","credit_officer","risk_compliance_officer"] },
@@ -25,6 +26,7 @@ const NAV: NavItem[] = [
   { to: "/admin/users", label: "Users", icon: Users, roles: ["super_admin"] },
   { to: "/admin/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
 ];
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, roles, hasRole, signOut } = useAuth();
