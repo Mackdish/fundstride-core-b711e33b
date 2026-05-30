@@ -29,7 +29,7 @@ const NAV: NavItem[] = [
 
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user, roles, hasRole, signOut } = useAuth();
+  const { user, roles, hasRole, signOut, tenant } = useAuth();
   const [open, setOpen] = useState(false);
   const location = useRouterState({ select: (s) => s.location });
   const visible = NAV.filter((n) => !n.roles || hasRole(...n.roles));
@@ -40,12 +40,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-[#1E3A5F] text-white transform transition-transform ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="h-16 flex items-center justify-between px-5 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-amber-500 flex items-center justify-center font-bold">B</div>
-            <span className="font-semibold tracking-tight">BuildTrack360</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-8 w-8 rounded-md bg-amber-500 flex items-center justify-center font-bold shrink-0">B</div>
+            <div className="min-w-0">
+              <div className="font-semibold tracking-tight leading-tight">BuildTrack360</div>
+              <div className="text-[10px] text-white/60 truncate">{tenant?.name ?? "—"}</div>
+            </div>
           </div>
           <button className="lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
         </div>
+
         <nav className="px-3 py-4 space-y-0.5 overflow-y-auto h-[calc(100vh-4rem)]">
           {visible.map((item) => {
             const Active = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
