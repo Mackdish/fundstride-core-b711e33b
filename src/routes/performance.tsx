@@ -198,8 +198,9 @@ function BranchesTable({ rows }: { rows: any[] }) {
   const add = async () => {
     if (!name) return;
     const { error } = await supabase.from("branches").insert({ name, location, manager } as any);
-    if (error) toast.error(error.message); else { toast.success("Branch added"); setName(""); setLocation(""); setManager(""); location.length; window.location.reload(); }
+    if (error) toast.error(error.message); else { toast.success("Branch added"); setName(""); setLocation(""); setManager(""); window.location.reload(); }
   };
+
   return (
     <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">Branches</div>
