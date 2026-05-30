@@ -13,6 +13,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (!loading && user) nav({ to: "/dashboard" }); }, [user, loading, nav]);
@@ -26,18 +27,23 @@ function Login() {
         if (error) throw error;
         toast.success("Welcome back");
       } else {
+        if (!companyName.trim()) throw new Error("Company name is required");
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: { full_name: fullName } },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { full_name: fullName, company_name: companyName.trim() },
+          },
         });
         if (error) throw error;
-        toast.success("Account created. Signing you in…");
+        toast.success(`Company "${companyName}" created. You're its super admin.`);
       }
       nav({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message ?? "Authentication failed");
     } finally { setBusy(false); }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1E3A5F] to-[#2D5F8A] p-4">
