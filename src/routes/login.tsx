@@ -55,15 +55,22 @@ function Login() {
             <div className="text-xs text-slate-500">Kinetic Investment Ventures · CFMS</div>
           </div>
         </div>
-        <h1 className="text-xl font-semibold text-slate-900">{mode === "signin" ? "Sign in" : "Create your account"}</h1>
-        <p className="text-sm text-slate-500 mb-6">{mode === "signin" ? "Access your portal." : "Register to request access."}</p>
+        <h1 className="text-xl font-semibold text-slate-900">{mode === "signin" ? "Sign in" : "Create your company"}</h1>
+        <p className="text-sm text-slate-500 mb-6">{mode === "signin" ? "Access your portal." : "You'll become the super admin of a new workspace."}</p>
         <form onSubmit={submit} className="space-y-4">
           {mode === "signup" && (
-            <div>
-              <label className="text-sm text-slate-700">Full name</label>
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
-            </div>
+            <>
+              <div>
+                <label className="text-sm text-slate-700">Company name</label>
+                <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required placeholder="Acme Construction Finance" className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-700">Your full name</label>
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
+              </div>
+            </>
           )}
+
           <div>
             <label className="text-sm text-slate-700">Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
