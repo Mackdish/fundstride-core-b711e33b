@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
+  | "platform_admin"
   | "super_admin" | "credit_officer" | "operations_officer" | "site_monitoring_officer"
   | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor" | "executive";
 
@@ -87,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(Ctx);
 
 export const ROLE_LABELS: Record<AppRole, string> = {
-  super_admin: "Super Admin",
+  platform_admin: "Platform Admin",
+  super_admin: "Company Admin",
   credit_officer: "Credit Officer",
   operations_officer: "Operations",
   site_monitoring_officer: "Site Monitoring",
