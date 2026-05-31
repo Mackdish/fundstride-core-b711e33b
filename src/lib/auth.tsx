@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
+  | "platform_admin"
   | "super_admin" | "credit_officer" | "operations_officer" | "site_monitoring_officer"
   | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor" | "executive";
 
