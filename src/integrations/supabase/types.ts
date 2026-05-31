@@ -1842,6 +1842,56 @@ export type Database = {
           },
         ]
       }
+      sales_leads: {
+        Row: {
+          contact: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          product: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          product: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Update: {
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          product?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_leads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_media: {
         Row: {
           caption: string | null
@@ -2148,6 +2198,7 @@ export type Database = {
         | "developer"
         | "contractor"
         | "executive"
+        | "platform_admin"
       entity_status:
         | "draft"
         | "pending"
@@ -2295,6 +2346,7 @@ export const Constants = {
         "developer",
         "contractor",
         "executive",
+        "platform_admin",
       ],
       entity_status: [
         "draft",
