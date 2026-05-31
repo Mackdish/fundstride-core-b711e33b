@@ -4,8 +4,9 @@ import { useAuth, ROLE_LABELS, AppRole } from "@/lib/auth";
 import {
   LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin,
   HardHat, CreditCard, ShieldAlert, FileText, BarChart3, Settings, LogOut,
-  Bell, Menu, X, ChevronRight,
+  Bell, Menu, X, ChevronRight, Briefcase, Target,
 } from "lucide-react";
+import logoUrl from "@/assets/logo.png";
 
 type NavItem = { to: string; label: string; icon: any; roles?: AppRole[] };
 const NAV: NavItem[] = [
@@ -13,6 +14,7 @@ const NAV: NavItem[] = [
   { to: "/performance", label: "Financial Performance", icon: BarChart3, roles: ["super_admin","executive","finance_officer","risk_compliance_officer"] },
   { to: "/customers", label: "Customers", icon: Users, roles: ["super_admin","credit_officer","operations_officer"] },
   { to: "/projects", label: "Projects", icon: Building2 },
+  { to: "/sales-leads", label: "Sales Leads", icon: Target, roles: ["super_admin","credit_officer","operations_officer","executive"] },
   { to: "/appraisals", label: "Appraisals", icon: FileCheck2, roles: ["super_admin","credit_officer","risk_compliance_officer"] },
   { to: "/loans", label: "Loans", icon: Banknote, roles: ["super_admin","credit_officer","finance_officer","executive"] },
   { to: "/drawdowns", label: "Drawdowns", icon: Wallet },
@@ -23,6 +25,7 @@ const NAV: NavItem[] = [
   { to: "/monitoring", label: "Credit Monitoring", icon: FileCheck2, roles: ["super_admin","credit_officer","risk_compliance_officer","executive"] },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/analytics", label: "Analytics", icon: BarChart3, roles: ["super_admin","executive"] },
+  { to: "/admin/companies", label: "Companies", icon: Briefcase, roles: ["platform_admin"] },
   { to: "/admin/users", label: "Users", icon: Users, roles: ["super_admin"] },
   { to: "/admin/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
 ];
@@ -39,12 +42,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex bg-[#F8FAFC]">
       {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-[#1E3A5F] text-white transform transition-transform ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-        <div className="h-16 flex items-center justify-between px-5 border-b border-white/10">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="h-8 w-8 rounded-md bg-amber-500 flex items-center justify-center font-bold shrink-0">B</div>
+            <div className="h-10 w-10 rounded-md bg-white flex items-center justify-center shrink-0 p-1">
+              <img src={logoUrl} alt="BuildTrack360" className="h-full w-full object-contain" />
+            </div>
             <div className="min-w-0">
               <div className="font-semibold tracking-tight leading-tight">BuildTrack360</div>
-              <div className="text-[10px] text-white/60 truncate">{tenant?.name ?? "—"}</div>
+              <div className="text-[10px] text-white/60 truncate">{tenant?.name ?? "Construction Finance Management System"}</div>
             </div>
           </div>
           <button className="lg:hidden" onClick={() => setOpen(false)}><X className="h-5 w-5" /></button>
