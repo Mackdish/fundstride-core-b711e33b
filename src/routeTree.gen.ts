@@ -17,6 +17,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SiteVisitsIndexRouteImport } from './routes/site-visits.index'
+import { Route as SalesLeadsIndexRouteImport } from './routes/sales-leads.index'
 import { Route as RiskIndexRouteImport } from './routes/risk.index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as PaymentsIndexRouteImport } from './routes/payments.index'
@@ -28,9 +29,11 @@ import { Route as ContractorsIndexRouteImport } from './routes/contractors.index
 import { Route as AppraisalsIndexRouteImport } from './routes/appraisals.index'
 import { Route as SiteVisitsNewRouteImport } from './routes/site-visits.new'
 import { Route as SiteVisitsIdRouteImport } from './routes/site-visits.$id'
+import { Route as SalesLeadsNewRouteImport } from './routes/sales-leads.new'
 import { Route as RiskAlertsRouteImport } from './routes/risk.alerts'
 import { Route as ProjectsNewRouteImport } from './routes/projects.new'
 import { Route as ProjectsIdRouteImport } from './routes/projects.$id'
+import { Route as PaymentsNewRouteImport } from './routes/payments.new'
 import { Route as PaymentsIdRouteImport } from './routes/payments.$id'
 import { Route as MonitoringNewRouteImport } from './routes/monitoring.new'
 import { Route as LoansNewRouteImport } from './routes/loans.new'
@@ -43,6 +46,7 @@ import { Route as ContractorsIdRouteImport } from './routes/contractors.$id'
 import { Route as AppraisalsIdRouteImport } from './routes/appraisals.$id'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminCompaniesRouteImport } from './routes/admin.companies'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 
 const PerformanceRoute = PerformanceRouteImport.update({
@@ -83,6 +87,11 @@ const IndexRoute = IndexRouteImport.update({
 const SiteVisitsIndexRoute = SiteVisitsIndexRouteImport.update({
   id: '/site-visits/',
   path: '/site-visits/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesLeadsIndexRoute = SalesLeadsIndexRouteImport.update({
+  id: '/sales-leads/',
+  path: '/sales-leads/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RiskIndexRoute = RiskIndexRouteImport.update({
@@ -140,6 +149,11 @@ const SiteVisitsIdRoute = SiteVisitsIdRouteImport.update({
   path: '/site-visits/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SalesLeadsNewRoute = SalesLeadsNewRouteImport.update({
+  id: '/sales-leads/new',
+  path: '/sales-leads/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RiskAlertsRoute = RiskAlertsRouteImport.update({
   id: '/risk/alerts',
   path: '/risk/alerts',
@@ -153,6 +167,11 @@ const ProjectsNewRoute = ProjectsNewRouteImport.update({
 const ProjectsIdRoute = ProjectsIdRouteImport.update({
   id: '/projects/$id',
   path: '/projects/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsNewRoute = PaymentsNewRouteImport.update({
+  id: '/payments/new',
+  path: '/payments/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentsIdRoute = PaymentsIdRouteImport.update({
@@ -215,6 +234,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCompaniesRoute = AdminCompaniesRouteImport.update({
+  id: '/admin/companies',
+  path: '/admin/companies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
   id: '/admin/audit-log',
   path: '/admin/audit-log',
@@ -230,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/companies': typeof AdminCompaniesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -242,9 +267,11 @@ export interface FileRoutesByFullPath {
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
+  '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals/': typeof AppraisalsIndexRoute
@@ -256,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/payments/': typeof PaymentsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/risk/': typeof RiskIndexRoute
+  '/sales-leads/': typeof SalesLeadsIndexRoute
   '/site-visits/': typeof SiteVisitsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -267,6 +295,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/companies': typeof AdminCompaniesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -279,9 +308,11 @@ export interface FileRoutesByTo {
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
+  '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals': typeof AppraisalsIndexRoute
@@ -293,6 +324,7 @@ export interface FileRoutesByTo {
   '/payments': typeof PaymentsIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/risk': typeof RiskIndexRoute
+  '/sales-leads': typeof SalesLeadsIndexRoute
   '/site-visits': typeof SiteVisitsIndexRoute
 }
 export interface FileRoutesById {
@@ -305,6 +337,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/companies': typeof AdminCompaniesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -317,9 +350,11 @@ export interface FileRoutesById {
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRoute
+  '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
   '/appraisals/': typeof AppraisalsIndexRoute
@@ -331,6 +366,7 @@ export interface FileRoutesById {
   '/payments/': typeof PaymentsIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/risk/': typeof RiskIndexRoute
+  '/sales-leads/': typeof SalesLeadsIndexRoute
   '/site-visits/': typeof SiteVisitsIndexRoute
 }
 export interface FileRouteTypes {
@@ -344,6 +380,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/performance'
     | '/admin/audit-log'
+    | '/admin/companies'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -356,9 +393,11 @@ export interface FileRouteTypes {
     | '/loans/new'
     | '/monitoring/new'
     | '/payments/$id'
+    | '/payments/new'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
     | '/appraisals/'
@@ -370,6 +409,7 @@ export interface FileRouteTypes {
     | '/payments/'
     | '/projects/'
     | '/risk/'
+    | '/sales-leads/'
     | '/site-visits/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -381,6 +421,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/performance'
     | '/admin/audit-log'
+    | '/admin/companies'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -393,9 +434,11 @@ export interface FileRouteTypes {
     | '/loans/new'
     | '/monitoring/new'
     | '/payments/$id'
+    | '/payments/new'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
     | '/appraisals'
@@ -407,6 +450,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/projects'
     | '/risk'
+    | '/sales-leads'
     | '/site-visits'
   id:
     | '__root__'
@@ -418,6 +462,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/performance'
     | '/admin/audit-log'
+    | '/admin/companies'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -430,9 +475,11 @@ export interface FileRouteTypes {
     | '/loans/new'
     | '/monitoring/new'
     | '/payments/$id'
+    | '/payments/new'
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
     | '/appraisals/'
@@ -444,6 +491,7 @@ export interface FileRouteTypes {
     | '/payments/'
     | '/projects/'
     | '/risk/'
+    | '/sales-leads/'
     | '/site-visits/'
   fileRoutesById: FileRoutesById
 }
@@ -456,6 +504,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PerformanceRoute: typeof PerformanceRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
+  AdminCompaniesRoute: typeof AdminCompaniesRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AppraisalsIdRoute: typeof AppraisalsIdRoute
@@ -468,9 +517,11 @@ export interface RootRouteChildren {
   LoansNewRoute: typeof LoansNewRoute
   MonitoringNewRoute: typeof MonitoringNewRoute
   PaymentsIdRoute: typeof PaymentsIdRoute
+  PaymentsNewRoute: typeof PaymentsNewRoute
   ProjectsIdRoute: typeof ProjectsIdRoute
   ProjectsNewRoute: typeof ProjectsNewRoute
   RiskAlertsRoute: typeof RiskAlertsRoute
+  SalesLeadsNewRoute: typeof SalesLeadsNewRoute
   SiteVisitsIdRoute: typeof SiteVisitsIdRoute
   SiteVisitsNewRoute: typeof SiteVisitsNewRoute
   AppraisalsIndexRoute: typeof AppraisalsIndexRoute
@@ -482,6 +533,7 @@ export interface RootRouteChildren {
   PaymentsIndexRoute: typeof PaymentsIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   RiskIndexRoute: typeof RiskIndexRoute
+  SalesLeadsIndexRoute: typeof SalesLeadsIndexRoute
   SiteVisitsIndexRoute: typeof SiteVisitsIndexRoute
 }
 
@@ -541,6 +593,13 @@ declare module '@tanstack/react-router' {
       path: '/site-visits'
       fullPath: '/site-visits/'
       preLoaderRoute: typeof SiteVisitsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales-leads/': {
+      id: '/sales-leads/'
+      path: '/sales-leads'
+      fullPath: '/sales-leads/'
+      preLoaderRoute: typeof SalesLeadsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/risk/': {
@@ -620,6 +679,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteVisitsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sales-leads/new': {
+      id: '/sales-leads/new'
+      path: '/sales-leads/new'
+      fullPath: '/sales-leads/new'
+      preLoaderRoute: typeof SalesLeadsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/risk/alerts': {
       id: '/risk/alerts'
       path: '/risk/alerts'
@@ -639,6 +705,13 @@ declare module '@tanstack/react-router' {
       path: '/projects/$id'
       fullPath: '/projects/$id'
       preLoaderRoute: typeof ProjectsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments/new': {
+      id: '/payments/new'
+      path: '/payments/new'
+      fullPath: '/payments/new'
+      preLoaderRoute: typeof PaymentsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payments/$id': {
@@ -725,6 +798,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/companies': {
+      id: '/admin/companies'
+      path: '/admin/companies'
+      fullPath: '/admin/companies'
+      preLoaderRoute: typeof AdminCompaniesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/audit-log': {
       id: '/admin/audit-log'
       path: '/admin/audit-log'
@@ -744,6 +824,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PerformanceRoute: PerformanceRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
+  AdminCompaniesRoute: AdminCompaniesRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AppraisalsIdRoute: AppraisalsIdRoute,
@@ -756,9 +837,11 @@ const rootRouteChildren: RootRouteChildren = {
   LoansNewRoute: LoansNewRoute,
   MonitoringNewRoute: MonitoringNewRoute,
   PaymentsIdRoute: PaymentsIdRoute,
+  PaymentsNewRoute: PaymentsNewRoute,
   ProjectsIdRoute: ProjectsIdRoute,
   ProjectsNewRoute: ProjectsNewRoute,
   RiskAlertsRoute: RiskAlertsRoute,
+  SalesLeadsNewRoute: SalesLeadsNewRoute,
   SiteVisitsIdRoute: SiteVisitsIdRoute,
   SiteVisitsNewRoute: SiteVisitsNewRoute,
   AppraisalsIndexRoute: AppraisalsIndexRoute,
@@ -770,6 +853,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentsIndexRoute: PaymentsIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   RiskIndexRoute: RiskIndexRoute,
+  SalesLeadsIndexRoute: SalesLeadsIndexRoute,
   SiteVisitsIndexRoute: SiteVisitsIndexRoute,
 }
 export const routeTree = rootRouteImport
