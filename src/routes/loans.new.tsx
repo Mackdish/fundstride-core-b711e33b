@@ -197,10 +197,26 @@ function NewLoan() {
         <Field label="Relationship Manager"><input className={fieldCls} value={f.relationship_manager} onChange={set("relationship_manager")} /></Field>
       </Section>
 
-      <Section title="2. Facility Request">
+      <Section title="2. Facility Request" description={loanProducts && loanProducts.length === 0 ? "Tip: ask your admin to define loan products under Admin → Loan Products to pre-fill defaults." : undefined}>
         <Field label="Product Type">
-          <select className={fieldCls} value={f.product_type} onChange={set("product_type")}>
-            {PRODUCT_TYPES.map((p) => <option key={p}>{p}</option>)}
+          <select
+            className={fieldCls}
+            value={f.product_type}
+            onChange={(e) => {
+              const name = e.target.value;
+              const prod = loanProducts?.find((p: any) => p.name === name);
+              setF((s: any) => ({
+                ...s,
+                product_type: name,
+                ...(prod?.default_interest_rate != null ? { interest_rate: prod.default_interest_rate } : {}),
+                ...(prod?.default_tenor_months != null ? { tenor_months: prod.default_tenor_months } : {}),
+                ...(prod?.repayment_frequency ? { repayment_frequency: prod.repayment_frequency } : {}),
+              }));
+            }}
+          >
+            {loanProducts && loanProducts.length > 0
+              ? loanProducts.map((p: any) => <option key={p.id} value={p.name}>{p.name}{p.code ? ` (${p.code})` : ""}</option>)
+              : PRODUCT_TYPES.map((p) => <option key={p}>{p}</option>)}
           </select>
         </Field>
         <Field label="Requested Amount (KES) *"><input className={fieldCls} type="number" value={f.requested_amount} onChange={set("requested_amount")} /></Field>
