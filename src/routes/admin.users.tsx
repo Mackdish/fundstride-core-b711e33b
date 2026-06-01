@@ -11,7 +11,7 @@ import { DataTable } from "@/components/DataTable";
 import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
-import { AppRole, ROLE_LABELS, useAuth } from "@/lib/auth";
+import { AppRole, ROLE_LABELS, ASSIGNABLE_ROLES, useAuth } from "@/lib/auth";
 import { createUser, updateUserRoles, deleteUser, setUserStatus } from "@/lib/admin-users.functions";
 import { logAudit } from "@/lib/audit";
 
