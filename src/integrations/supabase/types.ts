@@ -1184,6 +1184,74 @@ export type Database = {
           },
         ]
       }
+      loan_products: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by: string | null
+          default_interest_rate: number | null
+          default_tenor_months: number | null
+          description: string | null
+          id: string
+          insurance_fee_rate: number | null
+          max_amount: number | null
+          max_ltv: number | null
+          min_amount: number | null
+          name: string
+          processing_fee_rate: number | null
+          repayment_frequency: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_interest_rate?: number | null
+          default_tenor_months?: number | null
+          description?: string | null
+          id?: string
+          insurance_fee_rate?: number | null
+          max_amount?: number | null
+          max_ltv?: number | null
+          min_amount?: number | null
+          name: string
+          processing_fee_rate?: number | null
+          repayment_frequency?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_interest_rate?: number | null
+          default_tenor_months?: number | null
+          description?: string | null
+          id?: string
+          insurance_fee_rate?: number | null
+          max_amount?: number | null
+          max_ltv?: number | null
+          min_amount?: number | null
+          name?: string
+          processing_fee_rate?: number | null
+          repayment_frequency?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_products_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestones: {
         Row: {
           eligible_amount: number | null

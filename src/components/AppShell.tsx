@@ -27,6 +27,7 @@ const NAV: NavItem[] = [
   { to: "/analytics", label: "Analytics", icon: BarChart3, roles: ["super_admin","executive"] },
   { to: "/admin/companies", label: "Companies", icon: Briefcase, roles: ["platform_admin"] },
   { to: "/admin/users", label: "Users", icon: Users, roles: ["super_admin"] },
+  { to: "/admin/loan-products", label: "Loan Products", icon: Banknote, roles: ["super_admin","admin"] },
   { to: "/admin/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
 ];
 

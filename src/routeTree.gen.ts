@@ -46,8 +46,11 @@ import { Route as ContractorsIdRouteImport } from './routes/contractors.$id'
 import { Route as AppraisalsIdRouteImport } from './routes/appraisals.$id'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminLoanProductsRouteImport } from './routes/admin.loan-products'
 import { Route as AdminCompaniesRouteImport } from './routes/admin.companies'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
+import { Route as AdminLoanProductsNewRouteImport } from './routes/admin.loan-products.new'
+import { Route as AdminLoanProductsIdRouteImport } from './routes/admin.loan-products.$id'
 
 const PerformanceRoute = PerformanceRouteImport.update({
   id: '/performance',
@@ -234,6 +237,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoanProductsRoute = AdminLoanProductsRouteImport.update({
+  id: '/admin/loan-products',
+  path: '/admin/loan-products',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCompaniesRoute = AdminCompaniesRouteImport.update({
   id: '/admin/companies',
   path: '/admin/companies',
@@ -243,6 +251,16 @@ const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
   id: '/admin/audit-log',
   path: '/admin/audit-log',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoanProductsNewRoute = AdminLoanProductsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminLoanProductsRoute,
+} as any)
+const AdminLoanProductsIdRoute = AdminLoanProductsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminLoanProductsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -255,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/companies': typeof AdminCompaniesRoute
+  '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -285,6 +304,8 @@ export interface FileRoutesByFullPath {
   '/risk/': typeof RiskIndexRoute
   '/sales-leads/': typeof SalesLeadsIndexRoute
   '/site-visits/': typeof SiteVisitsIndexRoute
+  '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
+  '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -296,6 +317,7 @@ export interface FileRoutesByTo {
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/companies': typeof AdminCompaniesRoute
+  '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -326,6 +348,8 @@ export interface FileRoutesByTo {
   '/risk': typeof RiskIndexRoute
   '/sales-leads': typeof SalesLeadsIndexRoute
   '/site-visits': typeof SiteVisitsIndexRoute
+  '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
+  '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -338,6 +362,7 @@ export interface FileRoutesById {
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/companies': typeof AdminCompaniesRoute
+  '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
@@ -368,6 +393,8 @@ export interface FileRoutesById {
   '/risk/': typeof RiskIndexRoute
   '/sales-leads/': typeof SalesLeadsIndexRoute
   '/site-visits/': typeof SiteVisitsIndexRoute
+  '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
+  '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -381,6 +408,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/admin/audit-log'
     | '/admin/companies'
+    | '/admin/loan-products'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -411,6 +439,8 @@ export interface FileRouteTypes {
     | '/risk/'
     | '/sales-leads/'
     | '/site-visits/'
+    | '/admin/loan-products/$id'
+    | '/admin/loan-products/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -422,6 +452,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/admin/audit-log'
     | '/admin/companies'
+    | '/admin/loan-products'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -452,6 +483,8 @@ export interface FileRouteTypes {
     | '/risk'
     | '/sales-leads'
     | '/site-visits'
+    | '/admin/loan-products/$id'
+    | '/admin/loan-products/new'
   id:
     | '__root__'
     | '/'
@@ -463,6 +496,7 @@ export interface FileRouteTypes {
     | '/performance'
     | '/admin/audit-log'
     | '/admin/companies'
+    | '/admin/loan-products'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -493,6 +527,8 @@ export interface FileRouteTypes {
     | '/risk/'
     | '/sales-leads/'
     | '/site-visits/'
+    | '/admin/loan-products/$id'
+    | '/admin/loan-products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -505,6 +541,7 @@ export interface RootRouteChildren {
   PerformanceRoute: typeof PerformanceRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminCompaniesRoute: typeof AdminCompaniesRoute
+  AdminLoanProductsRoute: typeof AdminLoanProductsRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AppraisalsIdRoute: typeof AppraisalsIdRoute
@@ -798,6 +835,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/loan-products': {
+      id: '/admin/loan-products'
+      path: '/admin/loan-products'
+      fullPath: '/admin/loan-products'
+      preLoaderRoute: typeof AdminLoanProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/companies': {
       id: '/admin/companies'
       path: '/admin/companies'
@@ -812,8 +856,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditLogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/loan-products/new': {
+      id: '/admin/loan-products/new'
+      path: '/new'
+      fullPath: '/admin/loan-products/new'
+      preLoaderRoute: typeof AdminLoanProductsNewRouteImport
+      parentRoute: typeof AdminLoanProductsRoute
+    }
+    '/admin/loan-products/$id': {
+      id: '/admin/loan-products/$id'
+      path: '/$id'
+      fullPath: '/admin/loan-products/$id'
+      preLoaderRoute: typeof AdminLoanProductsIdRouteImport
+      parentRoute: typeof AdminLoanProductsRoute
+    }
   }
 }
+
+interface AdminLoanProductsRouteChildren {
+  AdminLoanProductsIdRoute: typeof AdminLoanProductsIdRoute
+  AdminLoanProductsNewRoute: typeof AdminLoanProductsNewRoute
+}
+
+const AdminLoanProductsRouteChildren: AdminLoanProductsRouteChildren = {
+  AdminLoanProductsIdRoute: AdminLoanProductsIdRoute,
+  AdminLoanProductsNewRoute: AdminLoanProductsNewRoute,
+}
+
+const AdminLoanProductsRouteWithChildren =
+  AdminLoanProductsRoute._addFileChildren(AdminLoanProductsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -825,6 +896,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerformanceRoute: PerformanceRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
   AdminCompaniesRoute: AdminCompaniesRoute,
+  AdminLoanProductsRoute: AdminLoanProductsRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AppraisalsIdRoute: AppraisalsIdRoute,
