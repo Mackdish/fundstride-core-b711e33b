@@ -19,7 +19,7 @@ export const Route = createFileRoute("/admin/users")({
   component: () => <ProtectedRoute roles={["super_admin"]}><UsersAdmin /></ProtectedRoute>,
 });
 
-const ALL_ROLES = Object.keys(ROLE_LABELS) as AppRole[];
+const ALL_ROLES = ASSIGNABLE_ROLES;
 
 type Row = { id: string; email: string; full_name: string | null; phone: string | null; status: string; created_at: string; roles: AppRole[] };
 
