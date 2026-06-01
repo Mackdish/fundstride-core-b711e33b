@@ -11,7 +11,7 @@ import { DataTable } from "@/components/DataTable";
 import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
-import { AppRole, ROLE_LABELS, useAuth } from "@/lib/auth";
+import { AppRole, ROLE_LABELS, ASSIGNABLE_ROLES, useAuth } from "@/lib/auth";
 import { createUser, updateUserRoles, deleteUser, setUserStatus } from "@/lib/admin-users.functions";
 import { logAudit } from "@/lib/audit";
 
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/admin/users")({
   component: () => <ProtectedRoute roles={["super_admin"]}><UsersAdmin /></ProtectedRoute>,
 });
 
-const ALL_ROLES = Object.keys(ROLE_LABELS) as AppRole[];
+const ALL_ROLES = ASSIGNABLE_ROLES;
 
 type Row = { id: string; email: string; full_name: string | null; phone: string | null; status: string; created_at: string; roles: AppRole[] };
 

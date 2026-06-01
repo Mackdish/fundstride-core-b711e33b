@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
   | "platform_admin"
-  | "super_admin" | "credit_officer" | "operations_officer" | "site_monitoring_officer"
-  | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor" | "executive";
+  | "super_admin" | "admin" | "executive" | "finance" | "credit" | "operations"
+  // legacy aliases (kept so older data + guards keep working during transition)
+  | "credit_officer" | "operations_officer" | "site_monitoring_officer"
+  | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor";
 
 export type Tenant = { id: string; name: string; currency: string };
 
@@ -25,9 +27,24 @@ const Ctx = createContext<AuthCtx>({
   signOut: async () => {}, hasRole: () => false, isStaff: false,
 });
 
+// Map legacy role names to the new simplified set so guards expressed in
+// either vocabulary keep matching.
+const ROLE_ALIASES: Record<string, AppRole[]> = {
+  credit_officer: ["credit"],
+  finance_officer: ["finance"],
+  operations_officer: ["operations"],
+  site_monitoring_officer: ["operations"],
+  risk_compliance_officer: ["admin"],
+  credit: ["credit_officer"],
+  finance: ["finance_officer"],
+  operations: ["operations_officer", "site_monitoring_officer"],
+  admin: ["risk_compliance_officer"],
+};
+
 const STAFF_ROLES: AppRole[] = [
-  "super_admin","credit_officer","operations_officer","site_monitoring_officer",
-  "finance_officer","risk_compliance_officer","executive",
+  "super_admin","admin","executive","finance","credit","operations",
+  "credit_officer","operations_officer","site_monitoring_officer",
+  "finance_officer","risk_compliance_officer",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -72,7 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }
 
-  const hasRole = (...r: AppRole[]) => r.some((role) => roles.includes(role));
+  const hasRole = (...r: AppRole[]) => {
+    const expanded = new Set<string>(roles);
+    for (const role of roles) (ROLE_ALIASES[role] ?? []).forEach((a) => expanded.add(a));
+    return r.some((role) => expanded.has(role));
+  };
   const isStaff = roles.some((r) => STAFF_ROLES.includes(r));
 
   return (
@@ -87,15 +108,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => useContext(Ctx);
 
+// Roles surfaced in the Company-Admin user-creation UI (the 6 you specified).
+export const ASSIGNABLE_ROLES: AppRole[] = [
+  "super_admin","admin","executive","finance","credit","operations",
+];
+
 export const ROLE_LABELS: Record<AppRole, string> = {
   platform_admin: "Platform Admin",
-  super_admin: "Company Admin",
-  credit_officer: "Credit Officer",
-  operations_officer: "Operations",
-  site_monitoring_officer: "Site Monitoring",
-  finance_officer: "Finance",
-  risk_compliance_officer: "Risk & Compliance",
+  super_admin: "Super Admin",
+  admin: "Admin",
+  executive: "Executive",
+  finance: "Finance",
+  credit: "Credit",
+  operations: "Operations",
+  // legacy
+  credit_officer: "Credit (legacy)",
+  operations_officer: "Operations (legacy)",
+  site_monitoring_officer: "Site Monitoring (legacy)",
+  finance_officer: "Finance (legacy)",
+  risk_compliance_officer: "Risk & Compliance (legacy)",
   developer: "Developer",
   contractor: "Contractor",
-  executive: "Executive",
 };

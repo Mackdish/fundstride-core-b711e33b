@@ -4,8 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ROLES = [
-  "super_admin","credit_officer","operations_officer","site_monitoring_officer",
-  "finance_officer","risk_compliance_officer","developer","contractor","executive",
+  "super_admin","admin","executive","finance","credit","operations",
 ] as const;
 
 async function assertSuperAdminAndGetTenant(userId: string): Promise<string> {
