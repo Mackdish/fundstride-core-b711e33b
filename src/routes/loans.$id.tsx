@@ -87,6 +87,8 @@ function LoanDetail() {
         description={`${l.appraisal?.customer?.name ?? "—"} · ${l.appraisal?.project?.location ?? "—"}`}
         actions={
           <div className="flex items-center gap-2">
+            <Link to="/loans/$id/statement" params={{ id }} className="h-10 px-3 rounded-md border border-slate-200 text-sm hover:bg-slate-50">Loan statement</Link>
+            <Link to="/loans/$id/repayment-schedule" params={{ id }} className="h-10 px-3 rounded-md border border-slate-200 text-sm hover:bg-slate-50">Repayment schedule</Link>
             <StatusBadge status={l.status} />
             {canActivate && l.status === "draft" && (
               <button onClick={activate} className="h-10 px-4 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] flex items-center gap-2">

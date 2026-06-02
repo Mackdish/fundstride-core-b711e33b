@@ -53,7 +53,12 @@ function PaymentDetail() {
 
   return (
     <>
-      <PageHeader title={`Payment · ${formatKES(p.amount)}`} description={p.purpose ?? "—"} actions={<StatusBadge status={p.status} />} />
+      <PageHeader title={`Payment · ${formatKES(p.amount)}`} description={p.purpose ?? "—"} actions={
+        <div className="flex items-center gap-2">
+          <Link to="/payments/$id/receipt" params={{ id }} className="h-9 px-3 rounded-md border border-slate-200 text-sm hover:bg-slate-50">Receipt</Link>
+          <StatusBadge status={p.status} />
+        </div>
+      } />
 
       <div className="grid lg:grid-cols-3 gap-4 mb-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
