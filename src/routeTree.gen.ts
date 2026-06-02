@@ -49,6 +49,11 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminLoanProductsRouteImport } from './routes/admin.loan-products'
 import { Route as AdminCompaniesRouteImport } from './routes/admin.companies'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
+import { Route as AdminLoanProductsIndexRouteImport } from './routes/admin.loan-products.index'
+import { Route as PaymentsIdReceiptRouteImport } from './routes/payments.$id.receipt'
+import { Route as LoansIdStatementRouteImport } from './routes/loans.$id.statement'
+import { Route as LoansIdRepaymentScheduleRouteImport } from './routes/loans.$id.repayment-schedule'
+import { Route as CustomersIdStatementRouteImport } from './routes/customers.$id.statement'
 import { Route as AdminLoanProductsNewRouteImport } from './routes/admin.loan-products.new'
 import { Route as AdminLoanProductsIdRouteImport } from './routes/admin.loan-products.$id'
 
@@ -252,6 +257,32 @@ const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
   path: '/admin/audit-log',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoanProductsIndexRoute = AdminLoanProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminLoanProductsRoute,
+} as any)
+const PaymentsIdReceiptRoute = PaymentsIdReceiptRouteImport.update({
+  id: '/receipt',
+  path: '/receipt',
+  getParentRoute: () => PaymentsIdRoute,
+} as any)
+const LoansIdStatementRoute = LoansIdStatementRouteImport.update({
+  id: '/statement',
+  path: '/statement',
+  getParentRoute: () => LoansIdRoute,
+} as any)
+const LoansIdRepaymentScheduleRoute =
+  LoansIdRepaymentScheduleRouteImport.update({
+    id: '/repayment-schedule',
+    path: '/repayment-schedule',
+    getParentRoute: () => LoansIdRoute,
+  } as any)
+const CustomersIdStatementRoute = CustomersIdStatementRouteImport.update({
+  id: '/statement',
+  path: '/statement',
+  getParentRoute: () => CustomersIdRoute,
+} as any)
 const AdminLoanProductsNewRoute = AdminLoanProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -279,13 +310,13 @@ export interface FileRoutesByFullPath {
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
   '/contractors/new': typeof ContractorsNewRoute
-  '/customers/$id': typeof CustomersIdRoute
+  '/customers/$id': typeof CustomersIdRouteWithChildren
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
-  '/loans/$id': typeof LoansIdRoute
+  '/loans/$id': typeof LoansIdRouteWithChildren
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
-  '/payments/$id': typeof PaymentsIdRoute
+  '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
@@ -306,6 +337,11 @@ export interface FileRoutesByFullPath {
   '/site-visits/': typeof SiteVisitsIndexRoute
   '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
   '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
+  '/customers/$id/statement': typeof CustomersIdStatementRoute
+  '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
+  '/loans/$id/statement': typeof LoansIdStatementRoute
+  '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/admin/loan-products/': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -317,19 +353,18 @@ export interface FileRoutesByTo {
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/companies': typeof AdminCompaniesRoute
-  '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
   '/contractors/new': typeof ContractorsNewRoute
-  '/customers/$id': typeof CustomersIdRoute
+  '/customers/$id': typeof CustomersIdRouteWithChildren
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
-  '/loans/$id': typeof LoansIdRoute
+  '/loans/$id': typeof LoansIdRouteWithChildren
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
-  '/payments/$id': typeof PaymentsIdRoute
+  '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
@@ -350,6 +385,11 @@ export interface FileRoutesByTo {
   '/site-visits': typeof SiteVisitsIndexRoute
   '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
   '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
+  '/customers/$id/statement': typeof CustomersIdStatementRoute
+  '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
+  '/loans/$id/statement': typeof LoansIdStatementRoute
+  '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/admin/loan-products': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -368,13 +408,13 @@ export interface FileRoutesById {
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
   '/contractors/new': typeof ContractorsNewRoute
-  '/customers/$id': typeof CustomersIdRoute
+  '/customers/$id': typeof CustomersIdRouteWithChildren
   '/customers/new': typeof CustomersNewRoute
   '/drawdowns/$id': typeof DrawdownsIdRoute
-  '/loans/$id': typeof LoansIdRoute
+  '/loans/$id': typeof LoansIdRouteWithChildren
   '/loans/new': typeof LoansNewRoute
   '/monitoring/new': typeof MonitoringNewRoute
-  '/payments/$id': typeof PaymentsIdRoute
+  '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
   '/projects/$id': typeof ProjectsIdRoute
   '/projects/new': typeof ProjectsNewRoute
@@ -395,6 +435,11 @@ export interface FileRoutesById {
   '/site-visits/': typeof SiteVisitsIndexRoute
   '/admin/loan-products/$id': typeof AdminLoanProductsIdRoute
   '/admin/loan-products/new': typeof AdminLoanProductsNewRoute
+  '/customers/$id/statement': typeof CustomersIdStatementRoute
+  '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
+  '/loans/$id/statement': typeof LoansIdStatementRoute
+  '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/admin/loan-products/': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -441,6 +486,11 @@ export interface FileRouteTypes {
     | '/site-visits/'
     | '/admin/loan-products/$id'
     | '/admin/loan-products/new'
+    | '/customers/$id/statement'
+    | '/loans/$id/repayment-schedule'
+    | '/loans/$id/statement'
+    | '/payments/$id/receipt'
+    | '/admin/loan-products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -452,7 +502,6 @@ export interface FileRouteTypes {
     | '/performance'
     | '/admin/audit-log'
     | '/admin/companies'
-    | '/admin/loan-products'
     | '/admin/settings'
     | '/admin/users'
     | '/appraisals/$id'
@@ -485,6 +534,11 @@ export interface FileRouteTypes {
     | '/site-visits'
     | '/admin/loan-products/$id'
     | '/admin/loan-products/new'
+    | '/customers/$id/statement'
+    | '/loans/$id/repayment-schedule'
+    | '/loans/$id/statement'
+    | '/payments/$id/receipt'
+    | '/admin/loan-products'
   id:
     | '__root__'
     | '/'
@@ -529,6 +583,11 @@ export interface FileRouteTypes {
     | '/site-visits/'
     | '/admin/loan-products/$id'
     | '/admin/loan-products/new'
+    | '/customers/$id/statement'
+    | '/loans/$id/repayment-schedule'
+    | '/loans/$id/statement'
+    | '/payments/$id/receipt'
+    | '/admin/loan-products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -547,13 +606,13 @@ export interface RootRouteChildren {
   AppraisalsIdRoute: typeof AppraisalsIdRoute
   ContractorsIdRoute: typeof ContractorsIdRoute
   ContractorsNewRoute: typeof ContractorsNewRoute
-  CustomersIdRoute: typeof CustomersIdRoute
+  CustomersIdRoute: typeof CustomersIdRouteWithChildren
   CustomersNewRoute: typeof CustomersNewRoute
   DrawdownsIdRoute: typeof DrawdownsIdRoute
-  LoansIdRoute: typeof LoansIdRoute
+  LoansIdRoute: typeof LoansIdRouteWithChildren
   LoansNewRoute: typeof LoansNewRoute
   MonitoringNewRoute: typeof MonitoringNewRoute
-  PaymentsIdRoute: typeof PaymentsIdRoute
+  PaymentsIdRoute: typeof PaymentsIdRouteWithChildren
   PaymentsNewRoute: typeof PaymentsNewRoute
   ProjectsIdRoute: typeof ProjectsIdRoute
   ProjectsNewRoute: typeof ProjectsNewRoute
@@ -856,6 +915,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditLogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/loan-products/': {
+      id: '/admin/loan-products/'
+      path: '/'
+      fullPath: '/admin/loan-products/'
+      preLoaderRoute: typeof AdminLoanProductsIndexRouteImport
+      parentRoute: typeof AdminLoanProductsRoute
+    }
+    '/payments/$id/receipt': {
+      id: '/payments/$id/receipt'
+      path: '/receipt'
+      fullPath: '/payments/$id/receipt'
+      preLoaderRoute: typeof PaymentsIdReceiptRouteImport
+      parentRoute: typeof PaymentsIdRoute
+    }
+    '/loans/$id/statement': {
+      id: '/loans/$id/statement'
+      path: '/statement'
+      fullPath: '/loans/$id/statement'
+      preLoaderRoute: typeof LoansIdStatementRouteImport
+      parentRoute: typeof LoansIdRoute
+    }
+    '/loans/$id/repayment-schedule': {
+      id: '/loans/$id/repayment-schedule'
+      path: '/repayment-schedule'
+      fullPath: '/loans/$id/repayment-schedule'
+      preLoaderRoute: typeof LoansIdRepaymentScheduleRouteImport
+      parentRoute: typeof LoansIdRoute
+    }
+    '/customers/$id/statement': {
+      id: '/customers/$id/statement'
+      path: '/statement'
+      fullPath: '/customers/$id/statement'
+      preLoaderRoute: typeof CustomersIdStatementRouteImport
+      parentRoute: typeof CustomersIdRoute
+    }
     '/admin/loan-products/new': {
       id: '/admin/loan-products/new'
       path: '/new'
@@ -876,15 +970,54 @@ declare module '@tanstack/react-router' {
 interface AdminLoanProductsRouteChildren {
   AdminLoanProductsIdRoute: typeof AdminLoanProductsIdRoute
   AdminLoanProductsNewRoute: typeof AdminLoanProductsNewRoute
+  AdminLoanProductsIndexRoute: typeof AdminLoanProductsIndexRoute
 }
 
 const AdminLoanProductsRouteChildren: AdminLoanProductsRouteChildren = {
   AdminLoanProductsIdRoute: AdminLoanProductsIdRoute,
   AdminLoanProductsNewRoute: AdminLoanProductsNewRoute,
+  AdminLoanProductsIndexRoute: AdminLoanProductsIndexRoute,
 }
 
 const AdminLoanProductsRouteWithChildren =
   AdminLoanProductsRoute._addFileChildren(AdminLoanProductsRouteChildren)
+
+interface CustomersIdRouteChildren {
+  CustomersIdStatementRoute: typeof CustomersIdStatementRoute
+}
+
+const CustomersIdRouteChildren: CustomersIdRouteChildren = {
+  CustomersIdStatementRoute: CustomersIdStatementRoute,
+}
+
+const CustomersIdRouteWithChildren = CustomersIdRoute._addFileChildren(
+  CustomersIdRouteChildren,
+)
+
+interface LoansIdRouteChildren {
+  LoansIdRepaymentScheduleRoute: typeof LoansIdRepaymentScheduleRoute
+  LoansIdStatementRoute: typeof LoansIdStatementRoute
+}
+
+const LoansIdRouteChildren: LoansIdRouteChildren = {
+  LoansIdRepaymentScheduleRoute: LoansIdRepaymentScheduleRoute,
+  LoansIdStatementRoute: LoansIdStatementRoute,
+}
+
+const LoansIdRouteWithChildren =
+  LoansIdRoute._addFileChildren(LoansIdRouteChildren)
+
+interface PaymentsIdRouteChildren {
+  PaymentsIdReceiptRoute: typeof PaymentsIdReceiptRoute
+}
+
+const PaymentsIdRouteChildren: PaymentsIdRouteChildren = {
+  PaymentsIdReceiptRoute: PaymentsIdReceiptRoute,
+}
+
+const PaymentsIdRouteWithChildren = PaymentsIdRoute._addFileChildren(
+  PaymentsIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -902,13 +1035,13 @@ const rootRouteChildren: RootRouteChildren = {
   AppraisalsIdRoute: AppraisalsIdRoute,
   ContractorsIdRoute: ContractorsIdRoute,
   ContractorsNewRoute: ContractorsNewRoute,
-  CustomersIdRoute: CustomersIdRoute,
+  CustomersIdRoute: CustomersIdRouteWithChildren,
   CustomersNewRoute: CustomersNewRoute,
   DrawdownsIdRoute: DrawdownsIdRoute,
-  LoansIdRoute: LoansIdRoute,
+  LoansIdRoute: LoansIdRouteWithChildren,
   LoansNewRoute: LoansNewRoute,
   MonitoringNewRoute: MonitoringNewRoute,
-  PaymentsIdRoute: PaymentsIdRoute,
+  PaymentsIdRoute: PaymentsIdRouteWithChildren,
   PaymentsNewRoute: PaymentsNewRoute,
   ProjectsIdRoute: ProjectsIdRoute,
   ProjectsNewRoute: ProjectsNewRoute,
