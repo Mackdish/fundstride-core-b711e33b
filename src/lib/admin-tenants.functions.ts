@@ -5,8 +5,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function assertPlatformAdmin(userId: string) {
   const { data } = await supabaseAdmin
-    .from("user_roles").select("role").eq("user_id", userId).eq("role", "platform_admin").maybeSingle();
-  if (!data) throw new Error("Forbidden: platform_admin only");
+    .from("user_roles").select("role").eq("user_id", userId).in("role", ["platform_admin", "super_admin"]);
+  if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
 }
 
 export const listCompanies = createServerFn({ method: "GET" })
