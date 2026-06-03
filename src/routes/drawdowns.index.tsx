@@ -35,7 +35,6 @@ function DrawdownsPage() {
           milestone:milestones ( name, sequence, project:projects ( name, customer:customers ( name ) ) ),
           loan:loan_facilities ( approved_amount, appraisal:appraisals ( customer:customers ( name ) ) )
         `)
-        .order("status", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(200);
       if (status) q = q.eq("status", status as any);
