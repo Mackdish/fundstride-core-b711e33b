@@ -44,7 +44,8 @@ function DrawdownsPage() {
     },
   });
 
-  const rows = (data ?? []).filter((r) => {
+  const statusRank: Record<string, number> = { pending: 0, blocked: 1, active: 2, rejected: 3 };
+  const rows = (data ?? []).slice().sort((a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9)).filter((r) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
