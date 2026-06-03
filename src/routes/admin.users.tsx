@@ -142,7 +142,7 @@ function CreateUserDialog({ onClose, onCreate }: { onClose: () => void; onCreate
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [roles, setRoles] = useState<AppRole[]>(["developer"]);
+  const [roles, setRoles] = useState<AppRole[]>(["operations"]);
   const [busy, setBusy] = useState(false);
 
   const toggle = (r: AppRole) => setRoles((cur) => cur.includes(r) ? cur.filter(x => x !== r) : [...cur, r]);

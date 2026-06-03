@@ -15,7 +15,7 @@ import { createCompany, listCompanies, deleteCompany } from "@/lib/admin-tenants
 import { logAudit } from "@/lib/audit";
 
 export const Route = createFileRoute("/admin/companies")({
-  component: () => <ProtectedRoute roles={["platform_admin"]}><CompaniesAdmin /></ProtectedRoute>,
+  component: () => <ProtectedRoute roles={["platform_admin", "super_admin"]}><CompaniesAdmin /></ProtectedRoute>,
 });
 
 function CompaniesAdmin() {
