@@ -58,6 +58,7 @@ function StaffMembersPage() {
   const update = useServerFn(updateStaffMember);
   const setStatus = useServerFn(setStaffStatus);
   const reset = useServerFn(resetStaffPassword);
+  const del = useServerFn(deleteStaffMember);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-staff"],
