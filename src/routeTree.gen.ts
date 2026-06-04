@@ -45,6 +45,7 @@ import { Route as ContractorsNewRouteImport } from './routes/contractors.new'
 import { Route as ContractorsIdRouteImport } from './routes/contractors.$id'
 import { Route as AppraisalsIdRouteImport } from './routes/appraisals.$id'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminStaffRouteImport } from './routes/admin.staff'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminLoanProductsRouteImport } from './routes/admin.loan-products'
 import { Route as AdminCompaniesRouteImport } from './routes/admin.companies'
@@ -237,6 +238,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStaffRoute = AdminStaffRouteImport.update({
+  id: '/admin/staff',
+  path: '/admin/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/admin/settings',
   path: '/admin/settings',
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/admin/companies': typeof AdminCompaniesRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/companies': typeof AdminCompaniesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
@@ -404,6 +412,7 @@ export interface FileRoutesById {
   '/admin/companies': typeof AdminCompaniesRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/staff': typeof AdminStaffRoute
   '/admin/users': typeof AdminUsersRoute
   '/appraisals/$id': typeof AppraisalsIdRoute
   '/contractors/$id': typeof ContractorsIdRoute
@@ -455,6 +464,7 @@ export interface FileRouteTypes {
     | '/admin/companies'
     | '/admin/loan-products'
     | '/admin/settings'
+    | '/admin/staff'
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/admin/audit-log'
     | '/admin/companies'
     | '/admin/settings'
+    | '/admin/staff'
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/admin/companies'
     | '/admin/loan-products'
     | '/admin/settings'
+    | '/admin/staff'
     | '/admin/users'
     | '/appraisals/$id'
     | '/contractors/$id'
@@ -602,6 +614,7 @@ export interface RootRouteChildren {
   AdminCompaniesRoute: typeof AdminCompaniesRoute
   AdminLoanProductsRoute: typeof AdminLoanProductsRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminStaffRoute: typeof AdminStaffRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AppraisalsIdRoute: typeof AppraisalsIdRoute
   ContractorsIdRoute: typeof ContractorsIdRoute
@@ -887,6 +900,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/staff': {
+      id: '/admin/staff'
+      path: '/admin/staff'
+      fullPath: '/admin/staff'
+      preLoaderRoute: typeof AdminStaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/admin/settings'
@@ -1031,6 +1051,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCompaniesRoute: AdminCompaniesRoute,
   AdminLoanProductsRoute: AdminLoanProductsRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminStaffRoute: AdminStaffRoute,
   AdminUsersRoute: AdminUsersRoute,
   AppraisalsIdRoute: AppraisalsIdRoute,
   ContractorsIdRoute: ContractorsIdRoute,

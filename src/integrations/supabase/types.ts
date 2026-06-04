@@ -1505,28 +1505,61 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          date_of_birth: string | null
+          department: string | null
           email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          employment_type: string | null
+          force_password_change: boolean
           full_name: string | null
+          gender: string | null
           id: string
+          id_number: string | null
+          job_title: string | null
           phone: string | null
+          start_date: string | null
           status: string
           tenant_id: string
         }
         Insert: {
           created_at?: string
+          date_of_birth?: string | null
+          department?: string | null
           email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employment_type?: string | null
+          force_password_change?: boolean
           full_name?: string | null
+          gender?: string | null
           id: string
+          id_number?: string | null
+          job_title?: string | null
           phone?: string | null
+          start_date?: string | null
           status?: string
           tenant_id: string
         }
         Update: {
           created_at?: string
+          date_of_birth?: string | null
+          department?: string | null
           email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employment_type?: string | null
+          force_password_change?: boolean
           full_name?: string | null
+          gender?: string | null
           id?: string
+          id_number?: string | null
+          job_title?: string | null
           phone?: string | null
+          start_date?: string | null
           status?: string
           tenant_id?: string
         }
