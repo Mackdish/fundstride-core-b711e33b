@@ -149,6 +149,21 @@ export const setStaffStatus = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const deleteStaffMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
+    if (data.user_id === context.userId) throw new Error("Cannot delete your own account");
+    const admin = await getAdmin();
+    await admin.from("user_roles").delete().eq("user_id", data.user_id);
+    await admin.from("profiles").delete().eq("id", data.user_id);
+    const { error } = await admin.auth.admin.deleteUser(data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const resetStaffPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))

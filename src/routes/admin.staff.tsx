@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, ShieldBan, ShieldCheck, KeyRound, Search } from "lucide-react";
+import { Plus, Pencil, ShieldBan, ShieldCheck, KeyRound, Search, Trash2 } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,7 +14,7 @@ import { formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import {
-  createStaffMember, updateStaffMember, setStaffStatus, resetStaffPassword,
+  createStaffMember, updateStaffMember, setStaffStatus, resetStaffPassword, deleteStaffMember,
 } from "@/lib/admin-staff.functions";
 
 export const Route = createFileRoute("/admin/staff")({
@@ -58,6 +58,7 @@ function StaffMembersPage() {
   const update = useServerFn(updateStaffMember);
   const setStatus = useServerFn(setStaffStatus);
   const reset = useServerFn(resetStaffPassword);
+  const del = useServerFn(deleteStaffMember);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-staff"],
@@ -105,6 +106,12 @@ function StaffMembersPage() {
   const mReset = useMutation({
     mutationFn: async (r: Row) => { await reset({ data: { user_id: r.id } }); await logAudit("reset_password", "staff", r.id, null, null); },
     onSuccess: () => toast.success("Password reset email sent"),
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
+  const mDelete = useMutation({
+    mutationFn: async (r: Row) => { await del({ data: { user_id: r.id } }); await logAudit("delete", "staff", r.id, r, null); },
+    onSuccess: () => { toast.success("Staff member deleted"); refresh(); },
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
@@ -164,6 +171,9 @@ function StaffMembersPage() {
                   <ShieldCheck className="h-4 w-4" />
                 </IconBtn>
               )}
+              <IconBtn title="Delete" disabled={r.id === me?.id} onClick={() => { if (confirm(`Permanently delete ${r.email}? This cannot be undone.`)) mDelete.mutate(r); }}>
+                <Trash2 className="h-4 w-4 text-red-600" />
+              </IconBtn>
             </div>
           )},
         ]}
