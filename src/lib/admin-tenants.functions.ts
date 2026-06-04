@@ -20,6 +20,7 @@ export const listCompanies = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertPlatformAdmin(context.userId);
+    const supabaseAdmin = await getAdmin();
     const { data: tenants, error } = await supabaseAdmin
       .from("tenants").select("id,name,currency,status,created_at").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -52,6 +53,7 @@ export const createCompany = createServerFn({ method: "POST" })
     if (data.mode === "password" && (!data.password || data.password.length < 8)) {
       throw new Error("Password is required (min 8 characters) when setting credentials manually");
     }
+    const supabaseAdmin = await getAdmin();
 
     // 1. Create tenant
     const { data: tenant, error: te } = await supabaseAdmin
@@ -102,7 +104,9 @@ export const deleteCompany = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ tenant_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertPlatformAdmin(context.userId);
+    const supabaseAdmin = await getAdmin();
     const { error } = await supabaseAdmin.from("tenants").delete().eq("id", data.tenant_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
