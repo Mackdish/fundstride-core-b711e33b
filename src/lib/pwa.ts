@@ -90,7 +90,6 @@ export function initPwa() {
   };
 
   wb.addEventListener("waiting", triggerUpdatePrompt);
-  wb.addEventListener("externalwaiting", triggerUpdatePrompt);
 
   wb.register().catch(() => {
     /* ignore registration failures */

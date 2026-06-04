@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { AuthProvider } from "../lib/auth";
+import { PwaPrompts } from "../components/PwaPrompts";
 
 import appCss from "../styles.css?url";
 
