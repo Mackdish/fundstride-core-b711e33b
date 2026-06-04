@@ -1,9 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// Lazy server-only import keeps the service-role client out of any
+// client-reachable module graph. See tanstack-supabase-import-graph.
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
 
 async function assertPlatformAdmin(userId: string) {
+  const supabaseAdmin = await getAdmin();
   const { data } = await supabaseAdmin
     .from("user_roles").select("role").eq("user_id", userId).in("role", ["platform_admin", "super_admin"]);
   if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
@@ -13,6 +20,7 @@ export const listCompanies = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertPlatformAdmin(context.userId);
+    const supabaseAdmin = await getAdmin();
     const { data: tenants, error } = await supabaseAdmin
       .from("tenants").select("id,name,currency,status,created_at").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -45,6 +53,7 @@ export const createCompany = createServerFn({ method: "POST" })
     if (data.mode === "password" && (!data.password || data.password.length < 8)) {
       throw new Error("Password is required (min 8 characters) when setting credentials manually");
     }
+    const supabaseAdmin = await getAdmin();
 
     // 1. Create tenant
     const { data: tenant, error: te } = await supabaseAdmin
@@ -95,7 +104,9 @@ export const deleteCompany = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ tenant_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertPlatformAdmin(context.userId);
+    const supabaseAdmin = await getAdmin();
     const { error } = await supabaseAdmin.from("tenants").delete().eq("id", data.tenant_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
