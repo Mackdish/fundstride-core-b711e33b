@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, ShieldBan, ShieldCheck, KeyRound, Search } from "lucide-react";
+import { Plus, Pencil, ShieldBan, ShieldCheck, KeyRound, Search, Trash2 } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
