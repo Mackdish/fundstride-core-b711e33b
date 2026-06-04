@@ -14,7 +14,7 @@ import { formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import {
-  createStaffMember, updateStaffMember, setStaffStatus, resetStaffPassword,
+  createStaffMember, updateStaffMember, setStaffStatus, resetStaffPassword, deleteStaffMember,
 } from "@/lib/admin-staff.functions";
 
 export const Route = createFileRoute("/admin/staff")({
