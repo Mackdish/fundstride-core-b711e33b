@@ -1,14 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ROLES = [
-  "super_admin","admin","executive","finance","credit","operations",
+  "super_admin", "admin", "executive", "finance", "credit", "operations",
 ] as const;
 
+// Lazy server-only import keeps the service-role client out of any
+// client-reachable module graph. See tanstack-supabase-import-graph.
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
 async function assertSuperAdminAndGetTenant(userId: string): Promise<string> {
-  const { data: role } = await supabaseAdmin
+  const admin = await getAdmin();
+  const { data: role } = await admin
     .from("user_roles").select("role,tenant_id").eq("user_id", userId)
     .eq("role", "super_admin").maybeSingle();
   if (!role) throw new Error("Forbidden: super_admin only");
@@ -16,7 +23,8 @@ async function assertSuperAdminAndGetTenant(userId: string): Promise<string> {
 }
 
 async function assertSameTenant(callerTenant: string, targetUserId: string) {
-  const { data } = await supabaseAdmin.from("profiles")
+  const admin = await getAdmin();
+  const { data } = await admin.from("profiles")
     .select("tenant_id").eq("id", targetUserId).maybeSingle();
   if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
 }
@@ -32,8 +40,9 @@ export const createUser = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    const admin = await getAdmin();
 
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+    const { data: created, error } = await admin.auth.admin.createUser({
       email: data.email,
       password: data.password,
       email_confirm: true,
@@ -42,15 +51,16 @@ export const createUser = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "Failed to create user");
     const uid = created.user.id;
 
-    await supabaseAdmin.from("profiles").upsert({
+    await admin.from("profiles").upsert({
       id: uid, email: data.email, full_name: data.full_name,
       phone: data.phone ?? null, tenant_id: tenantId,
     });
 
-    await supabaseAdmin.from("user_roles").delete().eq("user_id", uid);
-    await supabaseAdmin.from("user_roles").insert(
+    await admin.from("user_roles").delete().eq("user_id", uid);
+    const { error: re } = await admin.from("user_roles").insert(
       data.roles.map((role) => ({ user_id: uid, role, tenant_id: tenantId })),
     );
+    if (re) throw new Error(re.message);
 
     return { id: uid };
   });
@@ -64,8 +74,9 @@ export const updateUserRoles = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
-    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.user_id);
-    const { error } = await supabaseAdmin.from("user_roles")
+    const admin = await getAdmin();
+    await admin.from("user_roles").delete().eq("user_id", data.user_id);
+    const { error } = await admin.from("user_roles")
       .insert(data.roles.map((role) => ({ user_id: data.user_id, role, tenant_id: tenantId })));
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -80,7 +91,8 @@ export const setUserStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
-    const { error } = await supabaseAdmin.from("profiles")
+    const admin = await getAdmin();
+    const { error } = await admin.from("profiles")
       .update({ status: data.status }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -93,7 +105,8 @@ export const deleteUser = createServerFn({ method: "POST" })
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
     if (data.user_id === context.userId) throw new Error("Cannot delete your own account");
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
+    const admin = await getAdmin();
+    const { error } = await admin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

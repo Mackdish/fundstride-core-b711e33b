@@ -1,9 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// Lazy server-only import keeps the service-role client out of any
+// client-reachable module graph. See tanstack-supabase-import-graph.
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
 
 async function assertPlatformAdmin(userId: string) {
+  const supabaseAdmin = await getAdmin();
   const { data } = await supabaseAdmin
     .from("user_roles").select("role").eq("user_id", userId).in("role", ["platform_admin", "super_admin"]);
   if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
