@@ -171,6 +171,9 @@ function StaffMembersPage() {
                   <ShieldCheck className="h-4 w-4" />
                 </IconBtn>
               )}
+              <IconBtn title="Delete" disabled={r.id === me?.id} onClick={() => { if (confirm(`Permanently delete ${r.email}? This cannot be undone.`)) mDelete.mutate(r); }}>
+                <Trash2 className="h-4 w-4 text-red-600" />
+              </IconBtn>
             </div>
           )},
         ]}
