@@ -109,6 +109,12 @@ function StaffMembersPage() {
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
+  const mDelete = useMutation({
+    mutationFn: async (r: Row) => { await del({ data: { user_id: r.id } }); await logAudit("delete", "staff", r.id, r, null); },
+    onSuccess: () => { toast.success("Staff member deleted"); refresh(); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
   return (
     <>
       <PageHeader
