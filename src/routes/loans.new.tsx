@@ -339,7 +339,7 @@ function NewLoan() {
           </select>
         </Field>
         <Field label="Litigation Search"><input className={fieldCls} value={f.litigation_search} onChange={set("litigation_search")} /></Field>
-        <Field label="Character Score (/20)"><input type="number" min={0} max={20} className={fieldCls} value={f.character_score} onChange={set("character_score")} /></Field>
+        <Field label="Character Score (/20) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.character_score} readOnly /></Field>
       </Section>
 
       <Section title="5. Capacity Analysis (/25)">
