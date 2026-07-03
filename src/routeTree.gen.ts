@@ -51,6 +51,7 @@ import { Route as AdminLoanProductsRouteImport } from './routes/admin.loan-produ
 import { Route as AdminCompaniesRouteImport } from './routes/admin.companies'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 import { Route as AdminLoanProductsIndexRouteImport } from './routes/admin.loan-products.index'
+import { Route as ProjectsIdEditRouteImport } from './routes/projects.$id.edit'
 import { Route as PaymentsIdReceiptRouteImport } from './routes/payments.$id.receipt'
 import { Route as LoansIdStatementRouteImport } from './routes/loans.$id.statement'
 import { Route as LoansIdRepaymentScheduleRouteImport } from './routes/loans.$id.repayment-schedule'
@@ -268,6 +269,11 @@ const AdminLoanProductsIndexRoute = AdminLoanProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminLoanProductsRoute,
 } as any)
+const ProjectsIdEditRoute = ProjectsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ProjectsIdRoute,
+} as any)
 const PaymentsIdReceiptRoute = PaymentsIdReceiptRouteImport.update({
   id: '/receipt',
   path: '/receipt',
@@ -325,7 +331,7 @@ export interface FileRoutesByFullPath {
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
-  '/projects/$id': typeof ProjectsIdRoute
+  '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
@@ -348,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
   '/loans/$id/statement': typeof LoansIdStatementRoute
   '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/projects/$id/edit': typeof ProjectsIdEditRoute
   '/admin/loan-products/': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -374,7 +381,7 @@ export interface FileRoutesByTo {
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
-  '/projects/$id': typeof ProjectsIdRoute
+  '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
   '/loans/$id/statement': typeof LoansIdStatementRoute
   '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/projects/$id/edit': typeof ProjectsIdEditRoute
   '/admin/loan-products': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRoutesById {
@@ -425,7 +433,7 @@ export interface FileRoutesById {
   '/monitoring/new': typeof MonitoringNewRoute
   '/payments/$id': typeof PaymentsIdRouteWithChildren
   '/payments/new': typeof PaymentsNewRoute
-  '/projects/$id': typeof ProjectsIdRoute
+  '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
@@ -448,6 +456,7 @@ export interface FileRoutesById {
   '/loans/$id/repayment-schedule': typeof LoansIdRepaymentScheduleRoute
   '/loans/$id/statement': typeof LoansIdStatementRoute
   '/payments/$id/receipt': typeof PaymentsIdReceiptRoute
+  '/projects/$id/edit': typeof ProjectsIdEditRoute
   '/admin/loan-products/': typeof AdminLoanProductsIndexRoute
 }
 export interface FileRouteTypes {
@@ -500,6 +509,7 @@ export interface FileRouteTypes {
     | '/loans/$id/repayment-schedule'
     | '/loans/$id/statement'
     | '/payments/$id/receipt'
+    | '/projects/$id/edit'
     | '/admin/loan-products/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -549,6 +559,7 @@ export interface FileRouteTypes {
     | '/loans/$id/repayment-schedule'
     | '/loans/$id/statement'
     | '/payments/$id/receipt'
+    | '/projects/$id/edit'
     | '/admin/loan-products'
   id:
     | '__root__'
@@ -599,6 +610,7 @@ export interface FileRouteTypes {
     | '/loans/$id/repayment-schedule'
     | '/loans/$id/statement'
     | '/payments/$id/receipt'
+    | '/projects/$id/edit'
     | '/admin/loan-products/'
   fileRoutesById: FileRoutesById
 }
@@ -627,7 +639,7 @@ export interface RootRouteChildren {
   MonitoringNewRoute: typeof MonitoringNewRoute
   PaymentsIdRoute: typeof PaymentsIdRouteWithChildren
   PaymentsNewRoute: typeof PaymentsNewRoute
-  ProjectsIdRoute: typeof ProjectsIdRoute
+  ProjectsIdRoute: typeof ProjectsIdRouteWithChildren
   ProjectsNewRoute: typeof ProjectsNewRoute
   RiskAlertsRoute: typeof RiskAlertsRoute
   SalesLeadsNewRoute: typeof SalesLeadsNewRoute
@@ -942,6 +954,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoanProductsIndexRouteImport
       parentRoute: typeof AdminLoanProductsRoute
     }
+    '/projects/$id/edit': {
+      id: '/projects/$id/edit'
+      path: '/edit'
+      fullPath: '/projects/$id/edit'
+      preLoaderRoute: typeof ProjectsIdEditRouteImport
+      parentRoute: typeof ProjectsIdRoute
+    }
     '/payments/$id/receipt': {
       id: '/payments/$id/receipt'
       path: '/receipt'
@@ -1039,6 +1058,18 @@ const PaymentsIdRouteWithChildren = PaymentsIdRoute._addFileChildren(
   PaymentsIdRouteChildren,
 )
 
+interface ProjectsIdRouteChildren {
+  ProjectsIdEditRoute: typeof ProjectsIdEditRoute
+}
+
+const ProjectsIdRouteChildren: ProjectsIdRouteChildren = {
+  ProjectsIdEditRoute: ProjectsIdEditRoute,
+}
+
+const ProjectsIdRouteWithChildren = ProjectsIdRoute._addFileChildren(
+  ProjectsIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
@@ -1064,7 +1095,7 @@ const rootRouteChildren: RootRouteChildren = {
   MonitoringNewRoute: MonitoringNewRoute,
   PaymentsIdRoute: PaymentsIdRouteWithChildren,
   PaymentsNewRoute: PaymentsNewRoute,
-  ProjectsIdRoute: ProjectsIdRoute,
+  ProjectsIdRoute: ProjectsIdRouteWithChildren,
   ProjectsNewRoute: ProjectsNewRoute,
   RiskAlertsRoute: RiskAlertsRoute,
   SalesLeadsNewRoute: SalesLeadsNewRoute,
@@ -1085,13 +1116,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

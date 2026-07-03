@@ -40,6 +40,10 @@ function NewLoan() {
     queryKey: ["loan-products-active"],
     queryFn: async () => (await supabase.from("loan_products").select("*").eq("status", "active").order("name")).data ?? [],
   });
+  const { data: staff } = useQuery({
+    queryKey: ["loan-rm-staff"],
+    queryFn: async () => (await supabase.from("profiles").select("id,full_name,email,job_title").order("full_name")).data ?? [],
+  });
 
   const [f, setF] = useState<any>({
     customer_id: "", project_id: "", product_type: "Construction Loan",
@@ -47,6 +51,7 @@ function NewLoan() {
     tenor_months: 36, interest_rate: 14, repayment_frequency: "monthly",
     security_offered: "Land Title (LR)", equity_contribution: "",
     relationship_manager: "",
+    repayment_holiday_months: "", repayment_holiday_amount: "", repayment_holiday_notes: "",
     // Executive
     customer_background: "", facility_purpose: "", exec_recommendation: "",
     // Character /20
@@ -102,6 +107,74 @@ function NewLoan() {
     }
   }, [f.customer_id, projects]);
 
+  // Auto-calc repayment holiday amount (interest only) = principal * rate% / 12 * months
+  useEffect(() => {
+    const principal = Number(f.approved_amount || f.recommended_amount || f.requested_amount || 0);
+    const rate = Number(f.approved_rate || f.interest_rate || 0);
+    const months = Number(f.repayment_holiday_months || 0);
+    if (principal > 0 && rate > 0 && months > 0) {
+      const amt = (principal * (rate / 100) / 12) * months;
+      setF((s: any) => ({ ...s, repayment_holiday_amount: amt.toFixed(0) }));
+    } else if (!months) {
+      setF((s: any) => ({ ...s, repayment_holiday_amount: "" }));
+    }
+  }, [f.repayment_holiday_months, f.approved_amount, f.recommended_amount, f.requested_amount, f.approved_rate, f.interest_rate]);
+
+  // Auto-calc Character score (/20)
+  useEffect(() => {
+    let s = 0;
+    // CRB (up to 6)
+    if (f.crb_status === "Clean") s += 6;
+    else if (f.crb_status === "Listed - Resolved") s += 3;
+    else if (f.crb_status === "Not Checked") s += 1;
+    // Litigation (up to 4)
+    const lit = (f.litigation_search || "").toLowerCase().trim();
+    if (!lit || lit === "none") s += 4;
+    else if (lit.includes("resolved") || lit.includes("settled")) s += 2;
+    // Text fields (up to 10)
+    if ((f.management_experience || "").length > 3) s += 4;
+    if ((f.industry_reputation || "").length > 3) s += 3;
+    if ((f.integrity_assessment || "").length > 3) s += 3;
+    setF((p: any) => ({ ...p, character_score: Math.min(20, s) }));
+  }, [f.crb_status, f.litigation_search, f.management_experience, f.industry_reputation, f.integrity_assessment]);
+
+  // Auto-calc Capacity score (/25)
+  useEffect(() => {
+    let s = 0;
+    const rev = Number(f.revenue || 0);
+    const np = Number(f.net_profit || 0);
+    const gp = Number(f.gross_profit || 0);
+    const opex = Number(f.operating_expenses || 0);
+    const cr = Number(f.avg_monthly_credits || 0);
+    const db = Number(f.avg_monthly_debits || 0);
+    // Revenue > 0 (2)
+    if (rev > 0) s += 2;
+    // Net profit margin (up to 6)
+    if (rev > 0) {
+      const npm = (np / rev) * 100;
+      if (npm >= 15) s += 6; else if (npm >= 8) s += 4; else if (npm > 0) s += 2;
+    }
+    // Gross margin (up to 5)
+    if (rev > 0) {
+      const gm = (gp / rev) * 100;
+      if (gm >= 30) s += 5; else if (gm >= 20) s += 3; else if (gm > 0) s += 1;
+    }
+    // Opex ratio (up to 4)
+    if (rev > 0 && opex > 0) {
+      const opr = (opex / rev) * 100;
+      if (opr <= 40) s += 4; else if (opr <= 60) s += 2; else s += 1;
+    }
+    // Cashflow: credits vs debits (up to 8)
+    if (cr > 0) {
+      if (cr >= db * 1.3) s += 8;
+      else if (cr >= db * 1.1) s += 6;
+      else if (cr >= db) s += 4;
+      else s += 1;
+    }
+    setF((p: any) => ({ ...p, capacity_score: Math.min(25, s) }));
+  }, [f.revenue, f.net_profit, f.gross_profit, f.operating_expenses, f.avg_monthly_credits, f.avg_monthly_debits]);
+
+
   const totalScore = useMemo(
     () => Number(f.character_score || 0) + Number(f.capacity_score || 0) + Number(f.capital_score || 0) +
           Number(f.collateral_score || 0) + Number(f.conditions_score || 0),
@@ -152,7 +225,10 @@ function NewLoan() {
         tenor_months: Number(f.approved_tenor || f.tenor_months),
         interest_rate: Number(f.approved_rate || f.interest_rate),
         repayment_frequency: f.repayment_frequency,
-        relationship_manager: f.relationship_manager,
+        relationship_manager: f.relationship_manager || null,
+        repayment_holiday_months: f.repayment_holiday_months ? Number(f.repayment_holiday_months) : null,
+        repayment_holiday_amount: f.repayment_holiday_amount ? Number(f.repayment_holiday_amount) : null,
+        repayment_holiday_notes: f.repayment_holiday_notes || null,
         status: "draft",
       }).select("id").single();
       if (le) throw le;
@@ -194,7 +270,14 @@ function NewLoan() {
             ))}
           </select>
         </Field>
-        <Field label="Relationship Manager"><input className={fieldCls} value={f.relationship_manager} onChange={set("relationship_manager")} /></Field>
+        <Field label="Relationship Manager">
+          <select className={fieldCls} value={f.relationship_manager} onChange={set("relationship_manager")}>
+            <option value="">— Select staff —</option>
+            {staff?.map((s: any) => (
+              <option key={s.id} value={s.id}>{s.full_name || s.email}{s.job_title ? ` — ${s.job_title}` : ""}</option>
+            ))}
+          </select>
+        </Field>
       </Section>
 
       <Section title="2. Facility Request" description={loanProducts && loanProducts.length === 0 ? "Tip: ask your admin to define loan products under Admin → Loan Products to pre-fill defaults." : undefined}>
@@ -235,6 +318,9 @@ function NewLoan() {
           </select>
         </Field>
         <Field label="Equity Contribution (KES)"><input className={fieldCls} type="number" value={f.equity_contribution} onChange={set("equity_contribution")} /></Field>
+        <Field label="Repayment Holiday (months)"><input className={fieldCls} type="number" min={0} value={f.repayment_holiday_months} onChange={set("repayment_holiday_months")} /></Field>
+        <Field label="Repayment Holiday Amount (KES, auto — interest only)"><input className={fieldCls} value={f.repayment_holiday_amount} readOnly /></Field>
+        <Field label="Repayment Holiday Notes" className="sm:col-span-2"><textarea className={fieldCls + " h-16 py-2"} value={f.repayment_holiday_notes} onChange={set("repayment_holiday_notes")} placeholder="Rationale / conditions for the holiday period" /></Field>
       </Section>
 
       <Section title="3. Executive Summary">
@@ -253,7 +339,7 @@ function NewLoan() {
           </select>
         </Field>
         <Field label="Litigation Search"><input className={fieldCls} value={f.litigation_search} onChange={set("litigation_search")} /></Field>
-        <Field label="Character Score (/20)"><input type="number" min={0} max={20} className={fieldCls} value={f.character_score} onChange={set("character_score")} /></Field>
+        <Field label="Character Score (/20) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.character_score} readOnly /></Field>
       </Section>
 
       <Section title="5. Capacity Analysis (/25)">
@@ -265,7 +351,7 @@ function NewLoan() {
         <Field label="Avg Monthly Debits"><input type="number" className={fieldCls} value={f.avg_monthly_debits} onChange={set("avg_monthly_debits")} /></Field>
         <Field label="Debt Service Ratio (%)"><input type="number" step="0.01" className={fieldCls} value={f.debt_service_ratio} onChange={set("debt_service_ratio")} /></Field>
         <Field label="DSCR (x)"><input type="number" step="0.01" className={fieldCls} value={f.dscr} onChange={set("dscr")} /></Field>
-        <Field label="Capacity Score (/25)"><input type="number" min={0} max={25} className={fieldCls} value={f.capacity_score} onChange={set("capacity_score")} /></Field>
+        <Field label="Capacity Score (/25) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.capacity_score} readOnly /></Field>
       </Section>
 
       <Section title="6. Capital Analysis (/15)">
