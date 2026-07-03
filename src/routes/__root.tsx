@@ -89,6 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "BuildTrack360" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/37e81ae9-b6a0-44c1-9d02-661120e5feef/id-preview-5e8092d5--7524488c-408c-4c2e-af33-44a116234f5d.lovable.app-1783058395835.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/37e81ae9-b6a0-44c1-9d02-661120e5feef/id-preview-5e8092d5--7524488c-408c-4c2e-af33-44a116234f5d.lovable.app-1783058395835.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
