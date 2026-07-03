@@ -318,6 +318,9 @@ function NewLoan() {
           </select>
         </Field>
         <Field label="Equity Contribution (KES)"><input className={fieldCls} type="number" value={f.equity_contribution} onChange={set("equity_contribution")} /></Field>
+        <Field label="Repayment Holiday (months)"><input className={fieldCls} type="number" min={0} value={f.repayment_holiday_months} onChange={set("repayment_holiday_months")} /></Field>
+        <Field label="Repayment Holiday Amount (KES, auto — interest only)"><input className={fieldCls} value={f.repayment_holiday_amount} readOnly /></Field>
+        <Field label="Repayment Holiday Notes" className="sm:col-span-2"><textarea className={fieldCls + " h-16 py-2"} value={f.repayment_holiday_notes} onChange={set("repayment_holiday_notes")} placeholder="Rationale / conditions for the holiday period" /></Field>
       </Section>
 
       <Section title="3. Executive Summary">
