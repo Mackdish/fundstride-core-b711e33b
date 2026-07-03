@@ -107,6 +107,74 @@ function NewLoan() {
     }
   }, [f.customer_id, projects]);
 
+  // Auto-calc repayment holiday amount (interest only) = principal * rate% / 12 * months
+  useEffect(() => {
+    const principal = Number(f.approved_amount || f.recommended_amount || f.requested_amount || 0);
+    const rate = Number(f.approved_rate || f.interest_rate || 0);
+    const months = Number(f.repayment_holiday_months || 0);
+    if (principal > 0 && rate > 0 && months > 0) {
+      const amt = (principal * (rate / 100) / 12) * months;
+      setF((s: any) => ({ ...s, repayment_holiday_amount: amt.toFixed(0) }));
+    } else if (!months) {
+      setF((s: any) => ({ ...s, repayment_holiday_amount: "" }));
+    }
+  }, [f.repayment_holiday_months, f.approved_amount, f.recommended_amount, f.requested_amount, f.approved_rate, f.interest_rate]);
+
+  // Auto-calc Character score (/20)
+  useEffect(() => {
+    let s = 0;
+    // CRB (up to 6)
+    if (f.crb_status === "Clean") s += 6;
+    else if (f.crb_status === "Listed - Resolved") s += 3;
+    else if (f.crb_status === "Not Checked") s += 1;
+    // Litigation (up to 4)
+    const lit = (f.litigation_search || "").toLowerCase().trim();
+    if (!lit || lit === "none") s += 4;
+    else if (lit.includes("resolved") || lit.includes("settled")) s += 2;
+    // Text fields (up to 10)
+    if ((f.management_experience || "").length > 3) s += 4;
+    if ((f.industry_reputation || "").length > 3) s += 3;
+    if ((f.integrity_assessment || "").length > 3) s += 3;
+    setF((p: any) => ({ ...p, character_score: Math.min(20, s) }));
+  }, [f.crb_status, f.litigation_search, f.management_experience, f.industry_reputation, f.integrity_assessment]);
+
+  // Auto-calc Capacity score (/25)
+  useEffect(() => {
+    let s = 0;
+    const rev = Number(f.revenue || 0);
+    const np = Number(f.net_profit || 0);
+    const gp = Number(f.gross_profit || 0);
+    const opex = Number(f.operating_expenses || 0);
+    const cr = Number(f.avg_monthly_credits || 0);
+    const db = Number(f.avg_monthly_debits || 0);
+    // Revenue > 0 (2)
+    if (rev > 0) s += 2;
+    // Net profit margin (up to 6)
+    if (rev > 0) {
+      const npm = (np / rev) * 100;
+      if (npm >= 15) s += 6; else if (npm >= 8) s += 4; else if (npm > 0) s += 2;
+    }
+    // Gross margin (up to 5)
+    if (rev > 0) {
+      const gm = (gp / rev) * 100;
+      if (gm >= 30) s += 5; else if (gm >= 20) s += 3; else if (gm > 0) s += 1;
+    }
+    // Opex ratio (up to 4)
+    if (rev > 0 && opex > 0) {
+      const opr = (opex / rev) * 100;
+      if (opr <= 40) s += 4; else if (opr <= 60) s += 2; else s += 1;
+    }
+    // Cashflow: credits vs debits (up to 8)
+    if (cr > 0) {
+      if (cr >= db * 1.3) s += 8;
+      else if (cr >= db * 1.1) s += 6;
+      else if (cr >= db) s += 4;
+      else s += 1;
+    }
+    setF((p: any) => ({ ...p, capacity_score: Math.min(25, s) }));
+  }, [f.revenue, f.net_profit, f.gross_profit, f.operating_expenses, f.avg_monthly_credits, f.avg_monthly_debits]);
+
+
   const totalScore = useMemo(
     () => Number(f.character_score || 0) + Number(f.capacity_score || 0) + Number(f.capital_score || 0) +
           Number(f.collateral_score || 0) + Number(f.conditions_score || 0),
