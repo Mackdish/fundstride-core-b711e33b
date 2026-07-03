@@ -225,7 +225,10 @@ function NewLoan() {
         tenor_months: Number(f.approved_tenor || f.tenor_months),
         interest_rate: Number(f.approved_rate || f.interest_rate),
         repayment_frequency: f.repayment_frequency,
-        relationship_manager: f.relationship_manager,
+        relationship_manager: f.relationship_manager || null,
+        repayment_holiday_months: f.repayment_holiday_months ? Number(f.repayment_holiday_months) : null,
+        repayment_holiday_amount: f.repayment_holiday_amount ? Number(f.repayment_holiday_amount) : null,
+        repayment_holiday_notes: f.repayment_holiday_notes || null,
         status: "draft",
       }).select("id").single();
       if (le) throw le;
