@@ -779,6 +779,57 @@ export type Database = {
           },
         ]
       }
+      customer_messages: {
+        Row: {
+          attachment_url: string | null
+          body: string
+          created_at: string
+          customer_id: string
+          from_role: string
+          id: string
+          read_at: string | null
+          sender_user_id: string
+          tenant_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          body: string
+          created_at?: string
+          customer_id: string
+          from_role: string
+          id?: string
+          read_at?: string | null
+          sender_user_id: string
+          tenant_id?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          body?: string
+          created_at?: string
+          customer_id?: string
+          from_role?: string
+          id?: string
+          read_at?: string | null
+          sender_user_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_messages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -1113,6 +1164,9 @@ export type Database = {
           recommended_amount: number | null
           relationship_manager: string | null
           repayment_frequency: string
+          repayment_holiday_amount: number | null
+          repayment_holiday_months: number | null
+          repayment_holiday_notes: string | null
           requested_amount: number | null
           security_offered: string | null
           status: Database["public"]["Enums"]["entity_status"]
@@ -1137,6 +1191,9 @@ export type Database = {
           recommended_amount?: number | null
           relationship_manager?: string | null
           repayment_frequency?: string
+          repayment_holiday_amount?: number | null
+          repayment_holiday_months?: number | null
+          repayment_holiday_notes?: string | null
           requested_amount?: number | null
           security_offered?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
@@ -1161,6 +1218,9 @@ export type Database = {
           recommended_amount?: number | null
           relationship_manager?: string | null
           repayment_frequency?: string
+          repayment_holiday_amount?: number | null
+          repayment_holiday_months?: number | null
+          repayment_holiday_notes?: string | null
           requested_amount?: number | null
           security_offered?: string | null
           status?: Database["public"]["Enums"]["entity_status"]
@@ -2286,6 +2346,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_customer_owner: { Args: { _customer_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
@@ -2304,6 +2365,7 @@ export type Database = {
         | "finance"
         | "credit"
         | "operations"
+        | "customer"
       entity_status:
         | "draft"
         | "pending"
@@ -2456,6 +2518,7 @@ export const Constants = {
         "finance",
         "credit",
         "operations",
+        "customer",
       ],
       entity_status: [
         "draft",
