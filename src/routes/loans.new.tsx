@@ -40,6 +40,10 @@ function NewLoan() {
     queryKey: ["loan-products-active"],
     queryFn: async () => (await supabase.from("loan_products").select("*").eq("status", "active").order("name")).data ?? [],
   });
+  const { data: staff } = useQuery({
+    queryKey: ["loan-rm-staff"],
+    queryFn: async () => (await supabase.from("profiles").select("id,full_name,email,job_title").order("full_name")).data ?? [],
+  });
 
   const [f, setF] = useState<any>({
     customer_id: "", project_id: "", product_type: "Construction Loan",
