@@ -51,6 +51,7 @@ function NewLoan() {
     tenor_months: 36, interest_rate: 14, repayment_frequency: "monthly",
     security_offered: "Land Title (LR)", equity_contribution: "",
     relationship_manager: "",
+    repayment_holiday_months: "", repayment_holiday_amount: "", repayment_holiday_notes: "",
     // Executive
     customer_background: "", facility_purpose: "", exec_recommendation: "",
     // Character /20
