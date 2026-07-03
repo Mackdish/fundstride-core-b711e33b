@@ -351,7 +351,7 @@ function NewLoan() {
         <Field label="Avg Monthly Debits"><input type="number" className={fieldCls} value={f.avg_monthly_debits} onChange={set("avg_monthly_debits")} /></Field>
         <Field label="Debt Service Ratio (%)"><input type="number" step="0.01" className={fieldCls} value={f.debt_service_ratio} onChange={set("debt_service_ratio")} /></Field>
         <Field label="DSCR (x)"><input type="number" step="0.01" className={fieldCls} value={f.dscr} onChange={set("dscr")} /></Field>
-        <Field label="Capacity Score (/25)"><input type="number" min={0} max={25} className={fieldCls} value={f.capacity_score} onChange={set("capacity_score")} /></Field>
+        <Field label="Capacity Score (/25) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.capacity_score} readOnly /></Field>
       </Section>
 
       <Section title="6. Capital Analysis (/15)">
