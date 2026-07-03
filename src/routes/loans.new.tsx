@@ -270,7 +270,14 @@ function NewLoan() {
             ))}
           </select>
         </Field>
-        <Field label="Relationship Manager"><input className={fieldCls} value={f.relationship_manager} onChange={set("relationship_manager")} /></Field>
+        <Field label="Relationship Manager">
+          <select className={fieldCls} value={f.relationship_manager} onChange={set("relationship_manager")}>
+            <option value="">— Select staff —</option>
+            {staff?.map((s: any) => (
+              <option key={s.id} value={s.id}>{s.full_name || s.email}{s.job_title ? ` — ${s.job_title}` : ""}</option>
+            ))}
+          </select>
+        </Field>
       </Section>
 
       <Section title="2. Facility Request" description={loanProducts && loanProducts.length === 0 ? "Tip: ask your admin to define loan products under Admin → Loan Products to pre-fill defaults." : undefined}>
