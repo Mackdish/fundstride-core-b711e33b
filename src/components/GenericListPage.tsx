@@ -46,6 +46,9 @@ export function GenericListPage<T extends { id: string; status?: string }>({ con
       if (error) throw error;
       return ((data ?? []) as unknown) as T[];
     },
+    // Show previous rows while a new filter loads to avoid empty flashes.
+    placeholderData: (prev) => prev,
+    staleTime: 60_000,
   });
 
   const del = useMutation({
