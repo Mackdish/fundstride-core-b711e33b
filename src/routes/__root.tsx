@@ -10,6 +10,7 @@ import {
 import { Toaster } from "sonner";
 import { AuthProvider } from "../lib/auth";
 import { PwaPrompts } from "../components/PwaPrompts";
+import { InactivityGuard } from "../components/InactivityGuard";
 
 import appCss from "../styles.css?url";
 
@@ -125,6 +126,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <InactivityGuard />
         <Outlet />
         <PwaPrompts />
         <Toaster richColors position="top-right" />
