@@ -14,7 +14,7 @@ import { formatDate } from "@/lib/format";
 import { createCompany, listCompanies, deleteCompany } from "@/lib/admin-tenants.functions";
 import { logAudit } from "@/lib/audit";
 
-export const Route = createFileRoute("/admin/companies")({
+export const Route = createFileRoute("/admin/companies/")({
   component: () => <ProtectedRoute roles={["platform_admin", "super_admin"]}><CompaniesAdmin /></ProtectedRoute>,
 });
 
