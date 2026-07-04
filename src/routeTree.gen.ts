@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -69,6 +70,11 @@ const PerformanceRoute = PerformanceRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForbiddenRoute = ForbiddenRouteImport.update({
@@ -324,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
@@ -430,6 +438,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
   '/forbidden': typeof ForbiddenRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
@@ -485,6 +494,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/forbidden'
+    | '/forgot-password'
     | '/login'
     | '/performance'
     | '/admin/audit-log'
@@ -538,6 +548,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/forbidden'
+    | '/forgot-password'
     | '/login'
     | '/performance'
     | '/admin/audit-log'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/forbidden'
+    | '/forgot-password'
     | '/login'
     | '/performance'
     | '/admin/audit-log'
@@ -644,6 +656,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   DocumentsRoute: typeof DocumentsRoute
   ForbiddenRoute: typeof ForbiddenRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PerformanceRoute: typeof PerformanceRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
@@ -698,6 +711,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forbidden': {
@@ -1116,6 +1136,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   DocumentsRoute: DocumentsRoute,
   ForbiddenRoute: ForbiddenRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PerformanceRoute: PerformanceRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
