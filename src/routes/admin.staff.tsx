@@ -104,8 +104,11 @@ function StaffMembersPage() {
   });
 
   const mReset = useMutation({
-    mutationFn: async (r: Row) => { await reset({ data: { user_id: r.id } }); await logAudit("reset_password", "staff", r.id, null, null); },
-    onSuccess: () => toast.success("Password reset email sent"),
+    mutationFn: async ({ r, new_password }: { r: Row; new_password: string }) => {
+      await reset({ data: { user_id: r.id, new_password } });
+      await logAudit("reset_password", "staff", r.id, null, null);
+    },
+    onSuccess: (_res, vars) => toast.success(`Password set for ${vars.r.email}. Share it with them securely.`),
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
