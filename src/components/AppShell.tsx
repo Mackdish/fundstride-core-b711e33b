@@ -7,6 +7,7 @@ import {
   Bell, Menu, X, ChevronRight, Briefcase, Target,
 } from "lucide-react";
 import logoUrl from "@/assets/logo.png";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 type NavItem = { to: string; label: string; icon: any; roles?: AppRole[] };
 const NAV: NavItem[] = [
