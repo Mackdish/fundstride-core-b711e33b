@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -62,6 +63,11 @@ import { Route as AdminLoanProductsNewRouteImport } from './routes/admin.loan-pr
 import { Route as AdminLoanProductsIdRouteImport } from './routes/admin.loan-products.$id'
 import { Route as AdminCompaniesIdRouteImport } from './routes/admin.companies.$id'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerformanceRoute = PerformanceRouteImport.update({
   id: '/performance',
   path: '/performance',
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
@@ -387,6 +394,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
@@ -441,6 +449,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
   '/admin/settings': typeof AdminSettingsRoute
@@ -497,6 +506,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/reset-password'
     | '/admin/audit-log'
     | '/admin/loan-products'
     | '/admin/settings'
@@ -551,6 +561,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/reset-password'
     | '/admin/audit-log'
     | '/admin/settings'
     | '/admin/staff'
@@ -604,6 +615,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/reset-password'
     | '/admin/audit-log'
     | '/admin/loan-products'
     | '/admin/settings'
@@ -659,6 +671,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PerformanceRoute: typeof PerformanceRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminLoanProductsRoute: typeof AdminLoanProductsRouteWithChildren
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -699,6 +712,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/performance': {
       id: '/performance'
       path: '/performance'
@@ -1139,6 +1159,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PerformanceRoute: PerformanceRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
   AdminLoanProductsRoute: AdminLoanProductsRouteWithChildren,
   AdminSettingsRoute: AdminSettingsRoute,
