@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
 import { AppRole, ROLE_LABELS, ASSIGNABLE_ROLES, useAuth } from "@/lib/auth";
-import { createUser, updateUserRoles, deleteUser, setUserStatus } from "@/lib/admin-users.functions";
+import { createUser, updateUserRoles, deleteUser, setUserStatus, setUserPassword } from "@/lib/admin-users.functions";
 import { logAudit } from "@/lib/audit";
 
 export const Route = createFileRoute("/admin/users")({
