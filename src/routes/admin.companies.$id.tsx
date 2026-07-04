@@ -57,8 +57,8 @@ function CompanyDetail() {
         <KV k="Currency" v={tenant.currency ?? "—"} />
         <KV k="Created" v={formatDate(tenant.created_at)} />
         {settings && <>
-          <KV k="Fiscal year start" v={settings.fiscal_year_start ?? "—"} />
-          <KV k="Default interest %" v={settings.default_interest_rate ?? "—"} />
+          <KV k="Current fiscal year" v={settings.current_year ?? "—"} />
+          <KV k="Annual interest %" v={settings.annual_interest_rate ?? "—"} />
         </>}
       </Section>
 
