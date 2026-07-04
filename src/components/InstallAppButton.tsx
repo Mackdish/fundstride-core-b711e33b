@@ -21,7 +21,7 @@ export function InstallAppButton({ className = "" }: { className?: string }) {
   useEffect(() => {
     setInstalled(isAppInstalled());
     const off = onInstallAvailableChange((a) => setAvailable(a && !isAppInstalled()));
-    return off;
+    return () => { off(); };
   }, []);
 
   if (installed) {
