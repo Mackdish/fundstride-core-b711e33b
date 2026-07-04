@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import logoUrl from "@/assets/logo.png";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
