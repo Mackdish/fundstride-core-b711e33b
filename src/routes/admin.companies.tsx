@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Building2 } from "lucide-react";
+import { Plus, Trash2, Building2, ChevronRight } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/admin/companies")({
 
 function CompaniesAdmin() {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const list = useServerFn(listCompanies);
   const create = useServerFn(createCompany);
   const remove = useServerFn(deleteCompany);
@@ -48,6 +49,7 @@ function CompaniesAdmin() {
       <DataTable
         loading={isLoading}
         rows={(data ?? []) as any[]}
+        onRowClick={(r: any) => nav({ to: "/admin/companies/$id", params: { id: r.id } })}
         columns={[
           { header: "Company", cell: (r) => <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-400" /><span className="font-medium">{r.name}</span></div> },
           { header: "Admins", cell: (r) => r.admins.length ? r.admins.map((a: any) => a.email).join(", ") : "—" },
@@ -56,10 +58,15 @@ function CompaniesAdmin() {
           { header: "Status", cell: (r) => <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700">{r.status}</span> },
           { header: "Created", cell: (r) => formatDate(r.created_at) },
           { header: "", className: "w-1 text-right", cell: (r) => (
-            <button onClick={() => { if (confirm(`Delete ${r.name}? This removes all its data.`)) mDelete.mutate(r.id); }}
-              className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-red-50 text-red-600">
-              <Trash2 className="h-4 w-4" />
-            </button>
+            <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => nav({ to: "/admin/companies/$id", params: { id: r.id } })} title="View details" className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <button onClick={() => { if (confirm(`Delete ${r.name}? This removes all its data.`)) mDelete.mutate(r.id); }}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-red-50 text-red-600">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           )},
         ]}
         empty={<EmptyState title="No companies yet" message="Create your first company to onboard a tenant." />}

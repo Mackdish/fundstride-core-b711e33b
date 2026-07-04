@@ -30,6 +30,7 @@ import { Route as AppraisalsIndexRouteImport } from './routes/appraisals.index'
 import { Route as SiteVisitsNewRouteImport } from './routes/site-visits.new'
 import { Route as SiteVisitsIdRouteImport } from './routes/site-visits.$id'
 import { Route as SalesLeadsNewRouteImport } from './routes/sales-leads.new'
+import { Route as SalesLeadsIdRouteImport } from './routes/sales-leads.$id'
 import { Route as RiskAlertsRouteImport } from './routes/risk.alerts'
 import { Route as ProjectsNewRouteImport } from './routes/projects.new'
 import { Route as ProjectsIdRouteImport } from './routes/projects.$id'
@@ -162,6 +163,11 @@ const SiteVisitsIdRoute = SiteVisitsIdRouteImport.update({
 const SalesLeadsNewRoute = SalesLeadsNewRouteImport.update({
   id: '/sales-leads/new',
   path: '/sales-leads/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesLeadsIdRoute = SalesLeadsIdRouteImport.update({
+  id: '/sales-leads/$id',
+  path: '/sales-leads/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RiskAlertsRoute = RiskAlertsRouteImport.update({
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/$id': typeof SalesLeadsIdRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/$id': typeof SalesLeadsIdRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
@@ -436,6 +444,7 @@ export interface FileRoutesById {
   '/projects/$id': typeof ProjectsIdRouteWithChildren
   '/projects/new': typeof ProjectsNewRoute
   '/risk/alerts': typeof RiskAlertsRoute
+  '/sales-leads/$id': typeof SalesLeadsIdRoute
   '/sales-leads/new': typeof SalesLeadsNewRoute
   '/site-visits/$id': typeof SiteVisitsIdRoute
   '/site-visits/new': typeof SiteVisitsNewRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/$id'
     | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
@@ -539,6 +549,7 @@ export interface FileRouteTypes {
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/$id'
     | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/projects/$id'
     | '/projects/new'
     | '/risk/alerts'
+    | '/sales-leads/$id'
     | '/sales-leads/new'
     | '/site-visits/$id'
     | '/site-visits/new'
@@ -642,6 +654,7 @@ export interface RootRouteChildren {
   ProjectsIdRoute: typeof ProjectsIdRouteWithChildren
   ProjectsNewRoute: typeof ProjectsNewRoute
   RiskAlertsRoute: typeof RiskAlertsRoute
+  SalesLeadsIdRoute: typeof SalesLeadsIdRoute
   SalesLeadsNewRoute: typeof SalesLeadsNewRoute
   SiteVisitsIdRoute: typeof SiteVisitsIdRoute
   SiteVisitsNewRoute: typeof SiteVisitsNewRoute
@@ -805,6 +818,13 @@ declare module '@tanstack/react-router' {
       path: '/sales-leads/new'
       fullPath: '/sales-leads/new'
       preLoaderRoute: typeof SalesLeadsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales-leads/$id': {
+      id: '/sales-leads/$id'
+      path: '/sales-leads/$id'
+      fullPath: '/sales-leads/$id'
+      preLoaderRoute: typeof SalesLeadsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/risk/alerts': {
@@ -1098,6 +1118,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIdRoute: ProjectsIdRouteWithChildren,
   ProjectsNewRoute: ProjectsNewRoute,
   RiskAlertsRoute: RiskAlertsRoute,
+  SalesLeadsIdRoute: SalesLeadsIdRoute,
   SalesLeadsNewRoute: SalesLeadsNewRoute,
   SiteVisitsIdRoute: SiteVisitsIdRoute,
   SiteVisitsNewRoute: SiteVisitsNewRoute,
