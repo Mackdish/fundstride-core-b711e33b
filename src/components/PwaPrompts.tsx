@@ -46,7 +46,7 @@ export function PwaPrompts() {
     if (outcome !== "unavailable") setInstallReady(false);
   };
 
-  const showSignedInInstallPrompt = Boolean(user) && !installed && !installDismissed && !updateReload;
+  const showSignedInInstallPrompt = Boolean(user) && installReady && !installed && !installDismissed && !updateReload;
 
   return (
     <>
