@@ -36,6 +36,8 @@ function Dashboard() {
         openAlerts: r.data?.length ?? 0,
       };
     },
+    staleTime: 2 * 60_000,
+    placeholderData: (prev) => prev,
   });
 
   const chartData = [
