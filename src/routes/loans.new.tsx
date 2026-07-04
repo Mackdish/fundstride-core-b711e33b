@@ -24,6 +24,26 @@ const CRB_STATUSES = ["Clean", "Listed - Resolved", "Listed - Active", "Not Chec
 const STAGE_OPTIONS = ["Stage 1 - Performing", "Stage 2 - Underperforming (SICR)", "Stage 3 - Non-performing"];
 const RISK_LEVELS = ["Low", "Medium", "High"];
 
+// Graded scoring rubrics for Character Assessment (Section 4)
+const MGMT_EXPERIENCE = [
+  { label: "10+ years relevant experience", pts: 5 },
+  { label: "5–10 years relevant experience", pts: 4 },
+  { label: "2–5 years relevant experience", pts: 2 },
+  { label: "< 2 years / limited experience", pts: 1 },
+  { label: "No relevant experience", pts: 0 },
+] as const;
+const INDUSTRY_REPUTATION = [
+  { label: "Excellent — strong references", pts: 3 },
+  { label: "Good — positive references", pts: 2 },
+  { label: "Average — mixed feedback", pts: 1 },
+  { label: "Weak — negative signals", pts: 0 },
+] as const;
+const INTEGRITY_ASSESSMENT = [
+  { label: "No adverse findings", pts: 2 },
+  { label: "Minor concerns noted", pts: 1 },
+  { label: "Material concerns", pts: 0 },
+] as const;
+
 function NewLoan() {
   const { user } = useAuth();
   const nav = useNavigate();
@@ -54,13 +74,13 @@ function NewLoan() {
     repayment_holiday_months: "", repayment_holiday_amount: "", repayment_holiday_notes: "",
     // Executive
     customer_background: "", facility_purpose: "", exec_recommendation: "",
-    // Character /20
+    // Character /20 — graded selects, score starts at 0 and computes from inputs
     management_experience: "", industry_reputation: "", integrity_assessment: "",
-    crb_status: "Clean", litigation_search: "None", character_score: 15,
-    // Capacity /25
+    crb_status: "Clean", litigation_search: "None", character_score: 0,
+    // Capacity /25 — computed from financial inputs
     revenue: "", gross_profit: "", net_profit: "", operating_expenses: "",
     avg_monthly_credits: "", avg_monthly_debits: "", debt_service_ratio: "",
-    dscr: "", capacity_score: 18,
+    dscr: "", capacity_score: 0,
     // Capital /15
     net_worth: "", capital_equity: "", assets_owned: "", working_capital: "", capital_score: 10,
     // Collateral /20
@@ -120,7 +140,7 @@ function NewLoan() {
     }
   }, [f.repayment_holiday_months, f.approved_amount, f.recommended_amount, f.requested_amount, f.approved_rate, f.interest_rate]);
 
-  // Auto-calc Character score (/20)
+  // Auto-calc Character score (/20) from graded selects + CRB + litigation
   useEffect(() => {
     let s = 0;
     // CRB (up to 6)
@@ -131,10 +151,10 @@ function NewLoan() {
     const lit = (f.litigation_search || "").toLowerCase().trim();
     if (!lit || lit === "none") s += 4;
     else if (lit.includes("resolved") || lit.includes("settled")) s += 2;
-    // Text fields (up to 10)
-    if ((f.management_experience || "").length > 3) s += 4;
-    if ((f.industry_reputation || "").length > 3) s += 3;
-    if ((f.integrity_assessment || "").length > 3) s += 3;
+    // Graded selects
+    s += MGMT_EXPERIENCE.find((o) => o.label === f.management_experience)?.pts ?? 0;
+    s += INDUSTRY_REPUTATION.find((o) => o.label === f.industry_reputation)?.pts ?? 0;
+    s += INTEGRITY_ASSESSMENT.find((o) => o.label === f.integrity_assessment)?.pts ?? 0;
     setF((p: any) => ({ ...p, character_score: Math.min(20, s) }));
   }, [f.crb_status, f.litigation_search, f.management_experience, f.industry_reputation, f.integrity_assessment]);
 
@@ -329,17 +349,48 @@ function NewLoan() {
         <Field label="Recommendation" className="sm:col-span-2"><textarea className={fieldCls + " h-20 py-2"} value={f.exec_recommendation} onChange={set("exec_recommendation")} /></Field>
       </Section>
 
-      <Section title="4. Character Assessment (/20)">
-        <Field label="Management Experience"><input className={fieldCls} value={f.management_experience} onChange={set("management_experience")} /></Field>
-        <Field label="Industry Reputation"><input className={fieldCls} value={f.industry_reputation} onChange={set("industry_reputation")} /></Field>
-        <Field label="Integrity Assessment"><input className={fieldCls} value={f.integrity_assessment} onChange={set("integrity_assessment")} /></Field>
-        <Field label="CRB Status">
+      <Section title="4. Character Assessment (/20)" description="Character score updates automatically as you make selections below.">
+        <Field label="Management Experience (max 5)">
+          <select className={fieldCls} value={f.management_experience} onChange={set("management_experience")}>
+            <option value="">— Select —</option>
+            {MGMT_EXPERIENCE.map((o) => <option key={o.label} value={o.label}>{o.label} ({o.pts})</option>)}
+          </select>
+        </Field>
+        <Field label="Industry Reputation (max 3)">
+          <select className={fieldCls} value={f.industry_reputation} onChange={set("industry_reputation")}>
+            <option value="">— Select —</option>
+            {INDUSTRY_REPUTATION.map((o) => <option key={o.label} value={o.label}>{o.label} ({o.pts})</option>)}
+          </select>
+        </Field>
+        <Field label="Integrity Assessment (max 2)">
+          <select className={fieldCls} value={f.integrity_assessment} onChange={set("integrity_assessment")}>
+            <option value="">— Select —</option>
+            {INTEGRITY_ASSESSMENT.map((o) => <option key={o.label} value={o.label}>{o.label} ({o.pts})</option>)}
+          </select>
+        </Field>
+        <Field label="CRB Status (max 6)">
           <select className={fieldCls} value={f.crb_status} onChange={set("crb_status")}>
             {CRB_STATUSES.map((p) => <option key={p}>{p}</option>)}
           </select>
         </Field>
-        <Field label="Litigation Search"><input className={fieldCls} value={f.litigation_search} onChange={set("litigation_search")} /></Field>
-        <Field label="Character Score (/20) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.character_score} readOnly /></Field>
+        <Field label="Litigation Search (max 4)"><input className={fieldCls} value={f.litigation_search} onChange={set("litigation_search")} placeholder='e.g. "None", "Resolved", or describe case' /></Field>
+        <Field label="Character Score (/20) — auto">
+          <input type="number" className={fieldCls + " bg-emerald-50 font-semibold"} value={f.character_score} readOnly />
+        </Field>
+      </Section>
+
+      <Section title="5. Capacity Analysis (/25)" description="Capacity score updates as you enter the financial figures below.">
+        <Field label="Revenue (KES)"><input type="number" className={fieldCls} value={f.revenue} onChange={set("revenue")} /></Field>
+        <Field label="Gross Profit"><input type="number" className={fieldCls} value={f.gross_profit} onChange={set("gross_profit")} /></Field>
+        <Field label="Net Profit"><input type="number" className={fieldCls} value={f.net_profit} onChange={set("net_profit")} /></Field>
+        <Field label="Operating Expenses"><input type="number" className={fieldCls} value={f.operating_expenses} onChange={set("operating_expenses")} /></Field>
+        <Field label="Avg Monthly Credits"><input type="number" className={fieldCls} value={f.avg_monthly_credits} onChange={set("avg_monthly_credits")} /></Field>
+        <Field label="Avg Monthly Debits"><input type="number" className={fieldCls} value={f.avg_monthly_debits} onChange={set("avg_monthly_debits")} /></Field>
+        <Field label="Debt Service Ratio (%)"><input type="number" step="0.01" className={fieldCls} value={f.debt_service_ratio} onChange={set("debt_service_ratio")} /></Field>
+        <Field label="DSCR (x)"><input type="number" step="0.01" className={fieldCls} value={f.dscr} onChange={set("dscr")} /></Field>
+        <Field label="Capacity Score (/25) — auto">
+          <input type="number" className={fieldCls + " bg-emerald-50 font-semibold"} value={f.capacity_score} readOnly />
+        </Field>
       </Section>
 
       <Section title="5. Capacity Analysis (/25)">
