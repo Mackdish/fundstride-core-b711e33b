@@ -44,7 +44,10 @@ function Login() {
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
           </div>
           <div>
-            <label className="text-sm text-slate-700">Password</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm text-slate-700">Password</label>
+              <Link to="/forgot-password" className="text-xs text-[#1E3A5F] hover:underline font-medium">Forgot password?</Link>
+            </div>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="mt-1 w-full h-10 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
           </div>
           <button disabled={busy} className="w-full h-10 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] disabled:opacity-60">
