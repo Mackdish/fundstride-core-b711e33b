@@ -105,6 +105,16 @@ function UsersAdmin() {
               <button onClick={() => setEditing(r)} title="Edit roles" className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600">
                 <Pencil className="h-4 w-4" />
               </button>
+              <button
+                title="Set new password"
+                onClick={() => {
+                  const pw = prompt(`Set a new sign-in password for ${r.email}\n(min 8 characters — share it with the user privately):`);
+                  if (pw && pw.length >= 8) mSetPassword.mutate({ r, new_password: pw });
+                  else if (pw !== null) toast.error("Password must be at least 8 characters");
+                }}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600">
+                <KeyRound className="h-4 w-4" />
+              </button>
               <button onClick={() => mToggle.mutate(r)} disabled={r.id === currentUser?.id} title={r.status === "active" ? "Suspend" : "Reactivate"} className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600 disabled:opacity-40">
                 {r.status === "active" ? <ShieldBan className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
               </button>
