@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, ShieldBan, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Pencil, ShieldBan, ShieldCheck, KeyRound } from "lucide-react";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
 import { AppRole, ROLE_LABELS, ASSIGNABLE_ROLES, useAuth } from "@/lib/auth";
-import { createUser, updateUserRoles, deleteUser, setUserStatus } from "@/lib/admin-users.functions";
+import { createUser, updateUserRoles, deleteUser, setUserStatus, setUserPassword } from "@/lib/admin-users.functions";
 import { logAudit } from "@/lib/audit";
 
 export const Route = createFileRoute("/admin/users")({
@@ -33,6 +33,7 @@ function UsersAdmin() {
   const updateRoles = useServerFn(updateUserRoles);
   const remove = useServerFn(deleteUser);
   const setStatus = useServerFn(setUserStatus);
+  const setPass = useServerFn(setUserPassword);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -68,6 +69,15 @@ function UsersAdmin() {
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
+  const mSetPassword = useMutation({
+    mutationFn: async ({ r, new_password }: { r: Row; new_password: string }) => {
+      await setPass({ data: { user_id: r.id, new_password } });
+      await logAudit("set_password", "user", r.id, null, null);
+    },
+    onSuccess: (_res, vars) => toast.success(`Password set for ${vars.r.email}. Share it with them securely.`),
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
   return (
     <>
       <PageHeader
@@ -94,6 +104,16 @@ function UsersAdmin() {
             <div className="flex justify-end gap-1">
               <button onClick={() => setEditing(r)} title="Edit roles" className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600">
                 <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                title="Set new password"
+                onClick={() => {
+                  const pw = prompt(`Set a new sign-in password for ${r.email}\n(min 8 characters — share it with the user privately):`);
+                  if (pw && pw.length >= 8) mSetPassword.mutate({ r, new_password: pw });
+                  else if (pw !== null) toast.error("Password must be at least 8 characters");
+                }}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600">
+                <KeyRound className="h-4 w-4" />
               </button>
               <button onClick={() => mToggle.mutate(r)} disabled={r.id === currentUser?.id} title={r.status === "active" ? "Suspend" : "Reactivate"} className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-600 disabled:opacity-40">
                 {r.status === "active" ? <ShieldBan className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}

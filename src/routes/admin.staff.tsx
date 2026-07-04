@@ -104,8 +104,11 @@ function StaffMembersPage() {
   });
 
   const mReset = useMutation({
-    mutationFn: async (r: Row) => { await reset({ data: { user_id: r.id } }); await logAudit("reset_password", "staff", r.id, null, null); },
-    onSuccess: () => toast.success("Password reset email sent"),
+    mutationFn: async ({ r, new_password }: { r: Row; new_password: string }) => {
+      await reset({ data: { user_id: r.id, new_password } });
+      await logAudit("reset_password", "staff", r.id, null, null);
+    },
+    onSuccess: (_res, vars) => toast.success(`Password set for ${vars.r.email}. Share it with them securely.`),
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
@@ -161,7 +164,7 @@ function StaffMembersPage() {
           { header: "", className: "w-1 text-right", cell: (r) => (
             <div className="flex justify-end gap-1">
               <IconBtn title="Edit" onClick={() => setEditing(r)}><Pencil className="h-4 w-4" /></IconBtn>
-              <IconBtn title="Reset password" onClick={() => { if (confirm(`Send password reset to ${r.email}?`)) mReset.mutate(r); }}><KeyRound className="h-4 w-4" /></IconBtn>
+              <IconBtn title="Set new password" onClick={() => { const pw = prompt(`Set a new sign-in password for ${r.email}\n(min 8 characters — share it with the user privately):`); if (pw && pw.length >= 8) mReset.mutate({ r, new_password: pw }); else if (pw !== null) toast.error("Password must be at least 8 characters"); }}><KeyRound className="h-4 w-4" /></IconBtn>
               {r.status === "active" ? (
                 <IconBtn title="Deactivate" disabled={r.id === me?.id} onClick={() => { const s = prompt("Set status to 'inactive' or 'suspended':", "inactive"); if (s === "inactive" || s === "suspended") { if (confirm(`Change ${r.email} to ${s}?`)) mStatus.mutate({ r, status: s }); } }}>
                   <ShieldBan className="h-4 w-4" />

@@ -110,3 +110,26 @@ export const deleteUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const setUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    user_id: z.string().uuid(),
+    new_password: z.string().min(8).max(72),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
+    const admin = await getAdmin();
+    const { data: prof } = await admin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
+    if (!prof?.email) throw new Error("User not found");
+    // Set password directly and confirm email so the user can sign in immediately.
+    const { error } = await admin.auth.admin.updateUserById(data.user_id, {
+      password: data.new_password,
+      email_confirm: true,
+      ban_duration: "none",
+    } as any);
+    if (error) throw new Error(error.message);
+    await admin.from("profiles").update({ status: "active" }).eq("id", data.user_id);
+    return { ok: true, email: prof.email };
+  });

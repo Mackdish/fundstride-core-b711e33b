@@ -166,15 +166,26 @@ export const deleteStaffMember = createServerFn({ method: "POST" })
 
 export const resetStaffPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
+  .inputValidator((d) => z.object({
+    user_id: z.string().uuid(),
+    new_password: z.string().min(8).max(72),
+  }).parse(d))
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
     const admin = await getAdmin();
     const { data: prof } = await admin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
     if (!prof?.email) throw new Error("User not found");
-    const { error } = await admin.auth.admin.generateLink({ type: "recovery", email: prof.email });
+    // Set the password directly and confirm the email so the user can sign in immediately.
+    const { error } = await admin.auth.admin.updateUserById(data.user_id, {
+      password: data.new_password,
+      email_confirm: true,
+      ban_duration: "none",
+    } as any);
     if (error) throw new Error(error.message);
-    await admin.from("profiles").update({ force_password_change: true }).eq("id", data.user_id);
-    return { ok: true };
+    await admin.from("profiles").update({
+      force_password_change: true,
+      status: "active",
+    }).eq("id", data.user_id);
+    return { ok: true, email: prof.email };
   });
