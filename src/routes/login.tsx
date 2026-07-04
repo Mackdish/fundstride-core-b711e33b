@@ -55,7 +55,10 @@ function Login() {
             {busy ? "Please wait…" : "Sign in"}
           </button>
         </form>
-        <p className="mt-6 text-xs text-slate-500 text-center">
+        <div className="mt-6 flex justify-center">
+          <InstallAppButton />
+        </div>
+        <p className="mt-4 text-xs text-slate-500 text-center">
           New company? Contact your Platform Administrator to be onboarded.
         </p>
       </div>
