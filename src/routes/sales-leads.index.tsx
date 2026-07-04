@@ -20,7 +20,7 @@ export const Route = createFileRoute("/sales-leads/")({
         searchFields: ["name","contact","location"],
         deletable: true,
         newHref: "/sales-leads/new",
-        detailHref: undefined,
+        detailHref: (r: any) => `/sales-leads/${r.id}`,
         statusOptions: [
           { value: "Discussion", label: "Discussion" },
           { value: "Pending", label: "Pending" },

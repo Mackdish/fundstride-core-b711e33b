@@ -110,3 +110,39 @@ export const deleteCompany = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const getCompanyDetails = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ tenant_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertPlatformAdmin(context.userId);
+    const admin = await getAdmin();
+    const tid = data.tenant_id;
+
+    const [tenant, settings, users, roles, customers, projects, loans, payments] = await Promise.all([
+      admin.from("tenants").select("*").eq("id", tid).maybeSingle(),
+      admin.from("tenant_settings").select("*").eq("tenant_id", tid).maybeSingle(),
+      admin.from("profiles").select("id,email,full_name,phone,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }),
+      admin.from("user_roles").select("user_id,role").eq("tenant_id", tid),
+      admin.from("customers").select("id,name,type,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+      admin.from("projects").select("id,name,status,budget_amount,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+      admin.from("loan_facilities").select("id,account_number,status,approved_amount,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+      admin.from("payments").select("id,amount,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+    ]);
+
+    if (!tenant.data) throw new Error("Company not found");
+    const rolesByUser: Record<string, string[]> = {};
+    (roles.data ?? []).forEach((r) => { (rolesByUser[r.user_id] ??= []).push(r.role as string); });
+    const usersWithRoles = (users.data ?? []).map((u) => ({ ...u, roles: rolesByUser[u.id] ?? [] }));
+
+    return {
+      tenant: tenant.data,
+      settings: settings.data ?? null,
+      users: usersWithRoles,
+      customers: customers.data ?? [],
+      projects: projects.data ?? [],
+      loans: loans.data ?? [],
+      payments: payments.data ?? [],
+    };
+  });
+
+
