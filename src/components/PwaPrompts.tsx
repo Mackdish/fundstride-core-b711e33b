@@ -7,21 +7,25 @@ import {
   onUpdateAvailable,
   promptInstall,
 } from "@/lib/pwa";
+import { useAuth } from "@/lib/auth";
 
-const INSTALL_DISMISS_KEY = "pwa:install-dismissed";
+const INSTALL_DISMISS_KEY = "pwa:install-dismissed-session";
 
 export function PwaPrompts() {
+  const { user } = useAuth();
   const [installReady, setInstallReady] = useState(false);
   const [installDismissed, setInstallDismissed] = useState(false);
+  const [installed, setInstalled] = useState(false);
   const [updateReload, setUpdateReload] = useState<null | (() => void)>(null);
 
   useEffect(() => {
     initPwa();
-    setInstallDismissed(
-      typeof window !== "undefined" && localStorage.getItem(INSTALL_DISMISS_KEY) === "1",
-    );
+    setInstalled(isAppInstalled());
+    setInstallDismissed(typeof window !== "undefined" && sessionStorage.getItem(INSTALL_DISMISS_KEY) === "1");
     const offInstall = onInstallAvailableChange((available) => {
-      setInstallReady(available && !isAppInstalled());
+      const appInstalled = isAppInstalled();
+      setInstalled(appInstalled);
+      setInstallReady(available && !appInstalled);
     });
     const offUpdate = onUpdateAvailable((reload) => {
       setUpdateReload(() => reload);
@@ -33,7 +37,7 @@ export function PwaPrompts() {
   }, []);
 
   const dismissInstall = () => {
-    localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+    sessionStorage.setItem(INSTALL_DISMISS_KEY, "1");
     setInstallDismissed(true);
   };
 
@@ -41,6 +45,8 @@ export function PwaPrompts() {
     const outcome = await promptInstall();
     if (outcome !== "unavailable") setInstallReady(false);
   };
+
+  const showSignedInInstallPrompt = Boolean(user) && !installed && !installDismissed && !updateReload;
 
   return (
     <>
@@ -72,7 +78,7 @@ export function PwaPrompts() {
         </div>
       )}
 
-      {installReady && !installDismissed && !updateReload && (
+      {showSignedInInstallPrompt && (
         <div className="fixed bottom-4 right-4 z-[55] max-w-sm rounded-lg border border-slate-200 bg-white shadow-lg p-4 flex items-start gap-3">
           <div className="h-9 w-9 rounded-md bg-[#1E3A5F] text-white flex items-center justify-center shrink-0">
             <Download className="h-4 w-4" />
@@ -87,7 +93,7 @@ export function PwaPrompts() {
                 onClick={handleInstall}
                 className="px-3 py-1.5 text-xs font-medium rounded-md bg-[#1E3A5F] text-white hover:bg-[#162d4a]"
               >
-                Install
+                {installReady ? "Install" : "Install app"}
               </button>
               <button
                 onClick={dismissInstall}
