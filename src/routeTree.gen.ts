@@ -325,9 +325,9 @@ const AdminLoanProductsIdRoute = AdminLoanProductsIdRouteImport.update({
   getParentRoute: () => AdminLoanProductsRoute,
 } as any)
 const AdminCompaniesIdRoute = AdminCompaniesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AdminCompaniesRoute,
+  id: '/admin/companies/$id',
+  path: '/admin/companies/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -706,6 +706,7 @@ export interface RootRouteChildren {
   RiskIndexRoute: typeof RiskIndexRoute
   SalesLeadsIndexRoute: typeof SalesLeadsIndexRoute
   SiteVisitsIndexRoute: typeof SiteVisitsIndexRoute
+  AdminCompaniesIdRoute: typeof AdminCompaniesIdRoute
   AdminCompaniesIndexRoute: typeof AdminCompaniesIndexRoute
 }
 
@@ -1077,10 +1078,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin/companies/$id': {
       id: '/admin/companies/$id'
-      path: '/$id'
+      path: '/admin/companies/$id'
       fullPath: '/admin/companies/$id'
       preLoaderRoute: typeof AdminCompaniesIdRouteImport
-      parentRoute: typeof AdminCompaniesRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1193,18 +1194,9 @@ const rootRouteChildren: RootRouteChildren = {
   RiskIndexRoute: RiskIndexRoute,
   SalesLeadsIndexRoute: SalesLeadsIndexRoute,
   SiteVisitsIndexRoute: SiteVisitsIndexRoute,
+  AdminCompaniesIdRoute: AdminCompaniesIdRoute,
   AdminCompaniesIndexRoute: AdminCompaniesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
