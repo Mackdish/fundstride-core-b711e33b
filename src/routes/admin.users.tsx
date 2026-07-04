@@ -69,6 +69,15 @@ function UsersAdmin() {
     onError: (e: any) => toast.error(e?.message ?? "Failed"),
   });
 
+  const mSetPassword = useMutation({
+    mutationFn: async ({ r, new_password }: { r: Row; new_password: string }) => {
+      await setPass({ data: { user_id: r.id, new_password } });
+      await logAudit("set_password", "user", r.id, null, null);
+    },
+    onSuccess: (_res, vars) => toast.success(`Password set for ${vars.r.email}. Share it with them securely.`),
+    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+  });
+
   return (
     <>
       <PageHeader
