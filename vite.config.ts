@@ -15,7 +15,7 @@ export default defineConfig({
         manifest: false,
         workbox: {
           navigateFallback: null,
-          globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2,json,webmanifest}"],
           modifyURLPrefix: { "client/": "/" },
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
