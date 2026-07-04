@@ -393,18 +393,6 @@ function NewLoan() {
         </Field>
       </Section>
 
-      <Section title="5. Capacity Analysis (/25)">
-        <Field label="Revenue (KES)"><input type="number" className={fieldCls} value={f.revenue} onChange={set("revenue")} /></Field>
-        <Field label="Gross Profit"><input type="number" className={fieldCls} value={f.gross_profit} onChange={set("gross_profit")} /></Field>
-        <Field label="Net Profit"><input type="number" className={fieldCls} value={f.net_profit} onChange={set("net_profit")} /></Field>
-        <Field label="Operating Expenses"><input type="number" className={fieldCls} value={f.operating_expenses} onChange={set("operating_expenses")} /></Field>
-        <Field label="Avg Monthly Credits"><input type="number" className={fieldCls} value={f.avg_monthly_credits} onChange={set("avg_monthly_credits")} /></Field>
-        <Field label="Avg Monthly Debits"><input type="number" className={fieldCls} value={f.avg_monthly_debits} onChange={set("avg_monthly_debits")} /></Field>
-        <Field label="Debt Service Ratio (%)"><input type="number" step="0.01" className={fieldCls} value={f.debt_service_ratio} onChange={set("debt_service_ratio")} /></Field>
-        <Field label="DSCR (x)"><input type="number" step="0.01" className={fieldCls} value={f.dscr} onChange={set("dscr")} /></Field>
-        <Field label="Capacity Score (/25) — auto"><input type="number" className={fieldCls + " bg-slate-50"} value={f.capacity_score} readOnly /></Field>
-      </Section>
-
       <Section title="6. Capital Analysis (/15)">
         <Field label="Net Worth (KES)"><input type="number" className={fieldCls} value={f.net_worth} onChange={set("net_worth")} /></Field>
         <Field label="Equity Contribution"><input type="number" className={fieldCls} value={f.capital_equity} onChange={set("capital_equity")} /></Field>
