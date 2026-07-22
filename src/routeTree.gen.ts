@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as PerformanceRouteImport } from './routes/performance'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -66,6 +67,11 @@ import { Route as AdminCompaniesIdRouteImport } from './routes/admin.companies.$
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerformanceRoute = PerformanceRouteImport.update({
@@ -339,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
@@ -394,6 +401,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -449,6 +457,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/performance': typeof PerformanceRoute
+  '/portal': typeof PortalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/loan-products': typeof AdminLoanProductsRouteWithChildren
@@ -506,6 +515,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/portal'
     | '/reset-password'
     | '/admin/audit-log'
     | '/admin/loan-products'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/portal'
     | '/reset-password'
     | '/admin/audit-log'
     | '/admin/settings'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/performance'
+    | '/portal'
     | '/reset-password'
     | '/admin/audit-log'
     | '/admin/loan-products'
@@ -671,6 +683,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PerformanceRoute: typeof PerformanceRoute
+  PortalRoute: typeof PortalRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminLoanProductsRoute: typeof AdminLoanProductsRouteWithChildren
@@ -717,6 +730,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/performance': {
@@ -1159,6 +1179,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PerformanceRoute: PerformanceRoute,
+  PortalRoute: PortalRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
   AdminLoanProductsRoute: AdminLoanProductsRouteWithChildren,
