@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EditDeleteBar } from "@/components/EditDeleteBar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
+import { createCustomerLogin } from "@/lib/customer-login.functions";
+import { useAuth } from "@/lib/auth";
+import { KeyRound } from "lucide-react";
 
 
 export const Route = createFileRoute("/customers/$id")({
