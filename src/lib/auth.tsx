@@ -122,6 +122,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   finance: "Finance",
   credit: "Credit",
   operations: "Operations",
+  customer: "Customer",
   // legacy
   credit_officer: "Credit (legacy)",
   operations_officer: "Operations (legacy)",
