@@ -33,12 +33,17 @@ function CustomerDetail() {
 
   if (isLoading || !data?.customer) return <div className="text-sm text-slate-500">Loading…</div>;
   const c: any = data.customer;
+  const canManage = useAuth().hasRole(
+    "super_admin","platform_admin","admin","executive","credit","operations",
+    "credit_officer","operations_officer",
+  );
   return (
     <>
       <PageHeader title={c.name} description={`${c.customer_type} · ${c.sector ?? "—"}`} actions={
         <div className="flex items-center gap-3">
           <Link to="/customers/$id/statement" params={{ id: c.id }} className="h-9 px-3 rounded-md border border-slate-200 text-sm hover:bg-slate-50">Statement</Link>
           <StatusBadge status={c.status} />
+          {canManage && <CustomerLoginButton customer={c} />}
           <EditDeleteBar
             table="customers" id={c.id} row={c} queryKey={["customer", id]}
             redirectAfterDelete="/customers"
