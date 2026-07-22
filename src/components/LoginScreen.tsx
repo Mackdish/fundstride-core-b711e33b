@@ -8,14 +8,25 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 
 export function LoginScreen() {
   const nav = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole, roles } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const landingFor = () => {
+    const isStaff = hasRole(
+      "super_admin","platform_admin","admin","executive","finance","credit","operations",
+      "credit_officer","operations_officer","site_monitoring_officer",
+      "finance_officer","risk_compliance_officer",
+    );
+    if (isStaff) return "/dashboard" as const;
+    if (roles.includes("customer")) return "/portal" as const;
+    return "/dashboard" as const;
+  };
+
   useEffect(() => {
-    if (!loading && user) nav({ to: "/dashboard" });
-  }, [user, loading, nav]);
+    if (!loading && user) nav({ to: landingFor() });
+  }, [user, loading, roles.join(",")]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +35,7 @@ export function LoginScreen() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Welcome back");
-      nav({ to: "/dashboard" });
+      // useEffect will route once roles load.
     } catch (err: any) {
       toast.error(err.message ?? "Sign-in failed");
     } finally {
