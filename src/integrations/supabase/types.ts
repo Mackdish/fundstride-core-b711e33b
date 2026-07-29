@@ -2366,6 +2366,8 @@ export type Database = {
         | "credit"
         | "operations"
         | "customer"
+        | "sales"
+        | "projects"
       entity_status:
         | "draft"
         | "pending"
@@ -2519,6 +2521,8 @@ export const Constants = {
         "credit",
         "operations",
         "customer",
+        "sales",
+        "projects",
       ],
       entity_status: [
         "draft",

@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/site-visits/")({
   component: () => (
-    <ProtectedRoute roles={["super_admin","site_monitoring_officer","operations_officer","credit_officer"]}>
+    <ProtectedRoute roles={["super_admin","executive","sales","finance","projects","site_monitoring_officer","operations_officer","credit_officer"]}>
       <GenericListPage config={{
         title: "Site visits", description: "Field inspection reports and observations.",
         table: "site_visits", searchFields: ["observations","weather","purpose"], deletable: true,

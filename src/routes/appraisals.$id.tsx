@@ -22,7 +22,7 @@ function AppraisalDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const { hasRole } = useAuth();
-  const canDecide = hasRole("super_admin", "credit_officer");
+  const canDecide = hasRole("super_admin", "executive");
 
   const { data, isLoading } = useQuery({
     queryKey: ["appraisal", id],

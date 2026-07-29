@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppRole =
   | "platform_admin"
   | "super_admin" | "admin" | "executive" | "finance" | "credit" | "operations"
+  | "sales" | "projects"
   | "customer"
   // legacy aliases (kept so older data + guards keep working during transition)
   | "credit_officer" | "operations_officer" | "site_monitoring_officer"
@@ -43,7 +44,7 @@ const ROLE_ALIASES: Record<string, AppRole[]> = {
 };
 
 const STAFF_ROLES: AppRole[] = [
-  "super_admin","admin","executive","finance","credit","operations",
+  "super_admin","admin","executive","finance","credit","operations","sales","projects",
   "credit_officer","operations_officer","site_monitoring_officer",
   "finance_officer","risk_compliance_officer",
 ];
@@ -111,7 +112,7 @@ export const useAuth = () => useContext(Ctx);
 
 // Roles surfaced in the Company-Admin user-creation UI (the 6 you specified).
 export const ASSIGNABLE_ROLES: AppRole[] = [
-  "super_admin","admin","executive","finance","credit","operations",
+  "super_admin","admin","executive","finance","credit","operations","sales","projects",
 ];
 
 export const ROLE_LABELS: Record<AppRole, string> = {
@@ -122,6 +123,8 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   finance: "Finance",
   credit: "Credit",
   operations: "Operations",
+  sales: "Sales",
+  projects: "Projects",
   customer: "Customer",
   // legacy
   credit_officer: "Credit (legacy)",

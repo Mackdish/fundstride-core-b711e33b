@@ -12,7 +12,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export const Route = createFileRoute("/sales-leads/")({
   component: () => (
-    <ProtectedRoute roles={["super_admin","credit_officer","operations_officer","executive"]}>
+    <ProtectedRoute roles={["super_admin","executive","sales","finance","projects","credit_officer","operations_officer","finance_officer"]}>
       <GenericListPage config={{
         title: "Sales Lead Register",
         description: "Pipeline of leads — capture, qualify and close.",

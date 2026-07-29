@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/site-visits/new")({
   component: () => (
-    <ProtectedRoute roles={["super_admin", "site_monitoring_officer", "operations_officer", "credit_officer"]}>
+    <ProtectedRoute roles={["super_admin","executive","sales","finance","projects","site_monitoring_officer","operations_officer","credit_officer"]}>
       <NewSiteVisit />
     </ProtectedRoute>
   ),
