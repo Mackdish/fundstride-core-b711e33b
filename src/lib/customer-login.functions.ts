@@ -24,6 +24,20 @@ async function assertStaffAndGetTenant(userId: string): Promise<string> {
   return prof.tenant_id as string;
 }
 
+async function assertNoStaffRoles(userId: string) {
+  if (!userId) return;
+  const admin = await getAdmin();
+  const { data: roles } = await admin
+    .from("user_roles").select("role").eq("user_id", userId);
+  const staffRoles = new Set([
+    "super_admin","admin","executive","finance","credit","operations",
+    "credit_officer","operations_officer","site_monitoring_officer",
+    "finance_officer","risk_compliance_officer",
+  ]);
+  const hasStaff = (roles ?? []).some((r: any) => staffRoles.has(r.role));
+  if (hasStaff) throw new Error("Forbidden: user already has a staff role");
+}
+
 /**
  * Create (or link) an auth login for an existing customer so they can view
  * their own projects in the customer portal. Sets customers.owner_user_id and
@@ -54,6 +68,7 @@ export const createCustomerLogin = createServerFn({ method: "POST" })
     const existing = list?.users?.find((u) => u.email?.toLowerCase() === data.email.toLowerCase());
     if (existing) {
       uid = existing.id;
+      await assertNoStaffRoles(uid);
       const { error: upErr } = await admin.auth.admin.updateUserById(uid, {
         password: data.password, email_confirm: true,
       } as any);
@@ -70,6 +85,7 @@ export const createCustomerLogin = createServerFn({ method: "POST" })
       });
       if (error || !created.user) throw new Error(error?.message ?? "Failed to create login");
       uid = created.user.id;
+      await assertNoStaffRoles(uid);
     }
 
     // Ensure profile in same tenant.

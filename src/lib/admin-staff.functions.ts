@@ -23,6 +23,14 @@ async function assertSameTenant(callerTenant: string, targetUserId: string) {
   if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
 }
 
+async function assertNoCustomerRole(userId: string) {
+  const admin = await getAdmin();
+  const { data: roles } = await admin
+    .from("user_roles").select("role").eq("user_id", userId);
+  const hasCustomer = (roles ?? []).some((r: any) => r.role === "customer");
+  if (hasCustomer) throw new Error("Forbidden: user already has a customer role");
+}
+
 const StaffRole = z.enum(["admin", "operations"]); // Admin | Staff User
 
 const StaffProfileFields = z.object({
@@ -62,6 +70,7 @@ export const createStaffMember = createServerFn({ method: "POST" })
     });
     if (error || !created.user) throw new Error(error?.message ?? "Failed to create user");
     const uid = created.user.id;
+    await assertNoCustomerRole(uid);
 
     const profile = {
       id: uid,
@@ -103,6 +112,7 @@ export const updateStaffMember = createServerFn({ method: "POST" })
     await assertSameTenant(tenantId, data.user_id);
     const admin = await getAdmin();
     const full_name = `${data.first_name} ${data.last_name}`.trim();
+    await assertNoCustomerRole(data.user_id);
 
     const { error: pe } = await admin.from("profiles").update({
       email: data.email,

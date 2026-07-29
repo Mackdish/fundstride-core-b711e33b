@@ -68,6 +68,11 @@ function StaffMembersPage() {
         supabase.from("user_roles").select("user_id, role"),
       ]);
       const roleByUser: Record<string, string> = {};
+      const staffRoles = new Set([
+        "super_admin","admin","executive","finance","credit","operations","sales","projects",
+        "credit_officer","operations_officer","site_monitoring_officer",
+        "finance_officer","risk_compliance_officer",
+      ]);
       (r.data ?? []).forEach((x: any) => {
         // Pick a primary role; prefer admin/super_admin if present.
         const cur = roleByUser[x.user_id];
@@ -76,8 +81,8 @@ function StaffMembersPage() {
       return (p.data ?? []).map((u: any) => {
         const raw = roleByUser[u.id];
         const role: StaffRole = raw === "admin" || raw === "super_admin" ? "admin" : "operations";
-        return { ...u, role };
-      });
+        return staffRoles.has(raw) ? { ...u, role } : null;
+      }).filter(Boolean) as Row[];
     },
   });
 
