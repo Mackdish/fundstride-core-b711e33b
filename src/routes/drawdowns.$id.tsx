@@ -338,7 +338,7 @@ function DrawdownDetail() {
           </div>
 
           {/* Actions */}
-          {isStaff && (
+          {canApproveDrawdown && (
             <div className="rounded-xl border border-slate-200 bg-white p-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-3">Actions</h3>
               <div className="space-y-2">
