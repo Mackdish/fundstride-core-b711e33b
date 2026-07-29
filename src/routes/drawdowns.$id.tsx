@@ -67,7 +67,8 @@ function DrawdownDetail() {
   const { id } = useParams({ from: "/drawdowns/$id" });
   const nav = useNavigate();
   const qc = useQueryClient();
-  const { user, isStaff } = useAuth();
+  const { user, isStaff, hasRole } = useAuth();
+  const canApproveDrawdown = hasRole("super_admin", "executive");
   const [certifyOpen, setCertifyOpen] = useState(false);
   const [certAmount, setCertAmount] = useState("");
   const [payOpen, setPayOpen] = useState(false);
