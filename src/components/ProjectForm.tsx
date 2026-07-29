@@ -57,6 +57,13 @@ export const projectSchema = z.object({
 });
 export type ProjectFD = z.infer<typeof projectSchema>;
 
+function normalizeConsultantValue(value: unknown) {
+  if (typeof value !== "string") return "";
+  if (value.startsWith("staff:")) return value;
+  if (value.startsWith("contractor:")) return value;
+  return value ? `contractor:${value}` : "";
+}
+
 export function mapProjectRowToForm(p: any): Partial<ProjectFD> {
   const c = p.consultants ?? {};
   const a = p.approvals ?? {};
@@ -70,10 +77,10 @@ export function mapProjectRowToForm(p: any): Partial<ProjectFD> {
     client_contact_person: p.client_contact_person ?? "", client_telephone: p.client_telephone ?? "",
     client_email: p.client_email ?? "", client_physical_address: p.client_physical_address ?? "",
     client_postal_address: p.client_postal_address ?? "",
-    c_architect: c.architect ?? "", c_quantity_surveyor: c.quantity_surveyor ?? "",
-    c_structural: c.structural_engineer ?? "", c_civil: c.civil_engineer ?? "",
-    c_mechanical: c.mechanical_engineer ?? "", c_electrical: c.electrical_engineer ?? "",
-    c_project_manager: c.project_manager ?? "",
+    c_architect: normalizeConsultantValue(c.architect), c_quantity_surveyor: normalizeConsultantValue(c.quantity_surveyor),
+    c_structural: normalizeConsultantValue(c.structural_engineer), c_civil: normalizeConsultantValue(c.civil_engineer),
+    c_mechanical: normalizeConsultantValue(c.mechanical_engineer), c_electrical: normalizeConsultantValue(c.electrical_engineer),
+    c_project_manager: normalizeConsultantValue(c.project_manager),
     nature_of_development: p.nature_of_development ?? "", floors: p.floors ?? undefined,
     built_up_area: p.built_up_area ?? "", construction_methodology: p.construction_methodology ?? "",
     key_deliverables: p.key_deliverables ?? "", source_of_funding: p.source_of_funding ?? "",
@@ -112,6 +119,10 @@ export function ProjectForm({
     queryKey: ["contractors-list-full"],
     queryFn: async () => (await supabase.from("contractors").select("*").order("name")).data ?? [],
   });
+  const { data: staff } = useQuery({
+    queryKey: ["staff-list-full"],
+    queryFn: async () => (await supabase.from("profiles").select("id,full_name,email,job_title").order("full_name")).data ?? [],
+  });
 
   const watchedCustomerId = watch("customer_id");
   const selectedCustomer = useMemo(
@@ -147,6 +158,27 @@ export function ProjectForm({
     ["c_electrical", "Electrical engineer"],
     ["c_project_manager", "Project manager"],
   ];
+
+  const consultantOptions = useMemo(() => {
+    const internal = (staff ?? []).map((s: any) => ({
+      value: `staff:${s.id}`,
+      label: `${s.full_name || s.email}${s.job_title ? ` (${s.job_title})` : ""}`,
+      kind: "Staff member" as const,
+    }));
+    const external = (contractors ?? []).map((c: any) => ({
+      value: `contractor:${c.id}`,
+      label: `${c.name}${c.consultancy_type ? ` (${c.consultancy_type})` : ""}`,
+      kind: "External consultant" as const,
+    }));
+    return [...internal, ...external];
+  }, [staff, contractors]);
+
+  const resolveConsultant = (value?: string) => {
+    if (!value) return null;
+    if (value.startsWith("staff:")) return (staff ?? []).find((s: any) => `staff:${s.id}` === value) ?? null;
+    if (value.startsWith("contractor:")) return (contractors ?? []).find((c: any) => `contractor:${c.id}` === value) ?? null;
+    return (contractors ?? []).find((c: any) => c.id === value) ?? null;
+  };
 
   const onSubmit = async (v: ProjectFD) => {
     const payload = {
@@ -213,7 +245,7 @@ export function ProjectForm({
   const selectedConsultants = consultantFields
     .map(([k, label]) => {
       const id = watch(k) as string | undefined;
-      const c = contractors?.find((x: any) => x.id === id);
+      const c = resolveConsultant(id);
       return c ? { role: label, c } : null;
     })
     .filter(Boolean) as Array<{ role: string; c: any }>;
@@ -261,12 +293,12 @@ export function ProjectForm({
         )}
       </Section>
 
-      <Section title="Project consultants" description="Consultants must already be onboarded under Contractors.">
+      <Section title="Project consultants" description="Choose either an external consultant or an internal staff member, based on internal capacity.">
         {consultantFields.map(([key, label]) => (
           <Field key={key} label={label}>
             <select {...register(key)} className={fieldCls}>
               <option value="">— Select —</option>
-              {contractors?.map((c: any) => <option key={c.id} value={c.id}>{c.name}{c.consultancy_type ? ` (${c.consultancy_type})` : ""}</option>)}
+              {consultantOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label} — {opt.kind}</option>)}
             </select>
           </Field>
         ))}
@@ -275,11 +307,11 @@ export function ProjectForm({
             <div className="font-semibold text-slate-900">Selected consultant details</div>
             {selectedConsultants.map(({ role, c }) => (
               <div key={role} className="border-t border-slate-200 pt-2 first:border-0 first:pt-0">
-                <div className="font-medium text-slate-900">{role}: {c.name}</div>
+                <div className="font-medium text-slate-900">{role}: {c.name ?? c.full_name ?? c.email}</div>
                 <div className="grid grid-cols-2 gap-1">
-                  <div><span className="text-slate-500">Reg #:</span> {c.registration_number ?? "—"}</div>
-                  <div><span className="text-slate-500">NCA:</span> {c.nca_registration ?? "—"} {c.nca_category ? `(${c.nca_category})` : ""}</div>
-                  <div><span className="text-slate-500">Phone:</span> {c.phone ?? "—"}</div>
+                  {"registration_number" in c && <div><span className="text-slate-500">Reg #:</span> {c.registration_number ?? "—"}</div>}
+                  {"nca_registration" in c && <div><span className="text-slate-500">NCA:</span> {c.nca_registration ?? "—"} {c.nca_category ? `(${c.nca_category})` : ""}</div>}
+                  <div><span className="text-slate-500">Phone:</span> {c.phone ?? c.mobile ?? "—"}</div>
                   <div><span className="text-slate-500">Email:</span> {c.email ?? "—"}</div>
                 </div>
               </div>
