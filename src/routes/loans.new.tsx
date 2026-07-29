@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/loans/new")({
   component: () => (
-    <ProtectedRoute roles={["super_admin", "credit_officer", "risk_compliance_officer"]}>
+    <ProtectedRoute roles={["super_admin", "executive", "finance", "credit_officer", "finance_officer", "risk_compliance_officer"]}>
       <NewLoan />
     </ProtectedRoute>
   ),

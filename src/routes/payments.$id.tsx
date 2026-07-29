@@ -12,7 +12,7 @@ import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/payments/$id")({
   component: () => (
-    <ProtectedRoute roles={["super_admin", "finance_officer"]}><PaymentDetail /></ProtectedRoute>
+    <ProtectedRoute roles={["super_admin", "executive", "finance", "finance_officer"]}><PaymentDetail /></ProtectedRoute>
   ),
 });
 
@@ -20,7 +20,7 @@ function PaymentDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const { user, hasRole } = useAuth();
-  const canAuth = hasRole("super_admin", "finance_officer");
+  const canAuth = hasRole("super_admin", "executive");
 
   const { data, isLoading } = useQuery({
     queryKey: ["payment", id],

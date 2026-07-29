@@ -10,7 +10,7 @@ import { logAudit } from "@/lib/audit";
 
 export const Route = createFileRoute("/sales-leads/new")({
   component: () => (
-    <ProtectedRoute roles={["super_admin","credit_officer","operations_officer","executive"]}>
+    <ProtectedRoute roles={["super_admin","executive","sales","finance","projects","credit_officer","operations_officer","finance_officer"]}>
       <NewLead />
     </ProtectedRoute>
   ),

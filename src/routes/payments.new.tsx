@@ -11,7 +11,7 @@ import { logAudit } from "@/lib/audit";
 
 export const Route = createFileRoute("/payments/new")({
   component: () => (
-    <ProtectedRoute roles={["super_admin","finance_officer"]}>
+    <ProtectedRoute roles={["super_admin","executive","finance","finance_officer"]}>
       <NewPayment />
     </ProtectedRoute>
   ),
