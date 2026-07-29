@@ -249,7 +249,6 @@ function NewLoan() {
         repayment_holiday_months: f.repayment_holiday_months ? Number(f.repayment_holiday_months) : null,
         repayment_holiday_amount: f.repayment_holiday_amount ? Number(f.repayment_holiday_amount) : null,
         repayment_holiday_notes: f.repayment_holiday_notes || null,
-        created_by: user?.id ?? null,
         status: "draft",
       }).select("id").single();
       if (le) throw le;

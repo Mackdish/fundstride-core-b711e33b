@@ -11,7 +11,7 @@ SET search_path = public
 AS $$
 BEGIN
   INSERT INTO public.drawdown_requests (loan_id, requested_amount, status, tenant_id, requested_by)
-  VALUES (NEW.id, COALESCE(NEW.approved_amount, NEW.requested_amount, 0), 'pending', NEW.tenant_id, NEW.created_by);
+  VALUES (NEW.id, COALESCE(NEW.approved_amount, NEW.requested_amount, 0), 'pending', NEW.tenant_id, COALESCE(NEW.created_by, auth.uid()));
   RETURN NEW;
 END
 $$;
