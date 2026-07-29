@@ -6,7 +6,7 @@ import { ProjectForm, mapProjectRowToForm } from "@/components/ProjectForm";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/projects/$id/edit")({
-  component: () => <ProtectedRoute><EditProject /></ProtectedRoute>,
+  component: () => <ProtectedRoute roles={["executive", "super_admin"]}><EditProject /></ProtectedRoute>,
 });
 
 function EditProject() {

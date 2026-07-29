@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { EditDeleteBar } from "@/components/EditDeleteBar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatKES, formatDate } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
 const DOC_TYPES = [
@@ -23,8 +24,10 @@ export const Route = createFileRoute("/projects/$id")({
 function ProjectDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const { hasRole } = useAuth();
   const [docType, setDocType] = useState(DOC_TYPES[0]);
   const [uploading, setUploading] = useState(false);
+  const canEdit = hasRole("executive", "super_admin");
 
   const { data, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -82,11 +85,13 @@ function ProjectDetail() {
       <PageHeader title={p.name} description={`${p.customers?.name ?? "—"} · ${p.location ?? "—"}`} actions={
         <div className="flex items-center gap-3">
           <StatusBadge status={p.status} />
-          <Link
-            to="/projects/$id/edit"
-            params={{ id: p.id }}
-            className="h-9 px-3 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] inline-flex items-center"
-          >Edit project</Link>
+          {canEdit && (
+            <Link
+              to="/projects/$id/edit"
+              params={{ id: p.id }}
+              className="h-9 px-3 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] inline-flex items-center"
+            >Edit project</Link>
+          )}
           <EditDeleteBar
             table="projects" id={p.id} row={p} queryKey={["project", id]}
             redirectAfterDelete="/projects"
