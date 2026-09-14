@@ -16,6 +16,14 @@ async function assertPlatformAdmin(userId: string) {
   if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
 }
 
+/** Same check as above, but through the caller's own RLS-scoped client. */
+async function assertPlatformAdminViaRls(ctx: { supabase: any; userId: string }) {
+  const { data } = await ctx.supabase
+    .from("user_roles").select("role").eq("user_id", ctx.userId)
+    .in("role", ["platform_admin", "super_admin"]);
+  if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
+}
+
 export const listCompanies = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
