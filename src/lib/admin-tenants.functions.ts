@@ -39,6 +39,12 @@ export const listCompanies = createServerFn({ method: "GET" })
     });
   });
 
+/**
+ * Provision a new company plus its first Company Admin without any
+ * service-role key: an ordinary public sign-up carrying the company name,
+ * which the `handle_new_user` database trigger turns into the tenant, its
+ * settings, the admin profile and the super_admin role.
+ */
 export const createCompany = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({
@@ -49,54 +55,43 @@ export const createCompany = createServerFn({ method: "POST" })
     password: z.string().min(8).max(72).optional().nullable(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertPlatformAdmin(context.userId);
+    await assertPlatformAdminViaRls(context);
     if (data.mode === "password" && (!data.password || data.password.length < 8)) {
       throw new Error("Password is required (min 8 characters) when setting credentials manually");
     }
-    const supabaseAdmin = await getAdmin();
 
-    // 1. Create tenant
-    const { data: tenant, error: te } = await supabaseAdmin
-      .from("tenants").insert({ name: data.company_name, created_by: context.userId })
-      .select("id").single();
-    if (te || !tenant) throw new Error(te?.message ?? "Failed to create company");
+    const { signUpAppUser, sendPasswordResetEmail, optionalAdminClient } =
+      await import("./provision.server");
 
-    await supabaseAdmin.from("tenant_settings").insert({ tenant_id: tenant.id });
+    // Invite mode: sign up with a random password, then email a set-password link.
+    const initialPassword = data.mode === "password"
+      ? data.password!
+      : `Tmp-${crypto.randomUUID()}`;
 
-    // 2. Create or invite admin user
-    let uid: string;
+    const uid = await signUpAppUser({
+      email: data.admin_email,
+      password: initialPassword,
+      metadata: {
+        full_name: data.admin_full_name,
+        company_name: data.company_name,
+      },
+    });
+
     if (data.mode === "invite") {
-      const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-        data.admin_email,
-        { data: { full_name: data.admin_full_name, tenant_id: tenant.id } },
-      );
-      if (error || !invited.user) {
-        await supabaseAdmin.from("tenants").delete().eq("id", tenant.id);
-        throw new Error(error?.message ?? "Failed to invite admin");
-      }
-      uid = invited.user.id;
-    } else {
-      const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-        email: data.admin_email,
-        password: data.password!,
-        email_confirm: true,
-        user_metadata: { full_name: data.admin_full_name, tenant_id: tenant.id },
-      });
-      if (error || !created.user) {
-        await supabaseAdmin.from("tenants").delete().eq("id", tenant.id);
-        throw new Error(error?.message ?? "Failed to create admin");
-      }
-      uid = created.user.id;
+      await sendPasswordResetEmail(data.admin_email);
     }
 
-    // 3. Upsert profile + super_admin role (handle_new_user may have run with no tenant)
-    await supabaseAdmin.from("profiles").upsert({
-      id: uid, email: data.admin_email, full_name: data.admin_full_name, tenant_id: tenant.id,
-    });
-    await supabaseAdmin.from("user_roles").delete().eq("user_id", uid);
-    await supabaseAdmin.from("user_roles").insert({ user_id: uid, role: "super_admin", tenant_id: tenant.id });
+    // The new company is outside the caller's own tenant, so its id is only
+    // readable with elevated access; it is optional here.
+    let tenantId: string | null = null;
+    const admin = await optionalAdminClient();
+    if (admin) {
+      const { data: prof } = await admin.from("profiles")
+        .select("tenant_id").eq("id", uid).maybeSingle();
+      tenantId = (prof?.tenant_id as string) ?? null;
+    }
 
-    return { tenant_id: tenant.id, user_id: uid, mode: data.mode };
+    return { tenant_id: tenantId, user_id: uid, mode: data.mode };
   });
 
 export const deleteCompany = createServerFn({ method: "POST" })
