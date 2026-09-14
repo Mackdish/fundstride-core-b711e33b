@@ -77,7 +77,7 @@ function CompaniesAdmin() {
           onClose={() => setOpen(false)}
           onCreate={async (payload) => {
             const res = await create({ data: payload });
-            await logAudit("create", "tenant", res.tenant_id, null, { name: payload.company_name });
+            if (res.tenant_id) await logAudit("create", "tenant", res.tenant_id, null, { name: payload.company_name });
             toast.success(payload.mode === "invite"
               ? `Invite sent to ${payload.admin_email}`
               : `Company created. Share these credentials with ${payload.admin_email}.`);
