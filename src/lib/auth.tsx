@@ -29,8 +29,6 @@ const Ctx = createContext<AuthCtx>({
   signOut: async () => {}, hasRole: () => false, isStaff: false,
 });
 
-// Map legacy role names to the new simplified set so guards expressed in
-// either vocabulary keep matching.
 const ROLE_ALIASES: Record<string, AppRole[]> = {
   credit_officer: ["credit"],
   finance_officer: ["finance"],
@@ -57,39 +55,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+    let active = true;
+
+    const loadContext = async (uid: string) => {
+      const [{ data: rs }, { data: profile }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
+      ]);
+
+      if (!active) return;
+
+      setRoles((rs ?? []).map((r: any) => r.role as AppRole));
+
+      if (profile?.tenant_id) {
+        const { data: t } = await supabase.from("tenants")
+          .select("id,name,currency").eq("id", profile.tenant_id).maybeSingle();
+        if (!active) return;
+        setTenant(t ? (t as Tenant) : null);
+      } else {
+        setTenant(null);
+      }
+
+      setLoading(false);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (!active) return;
+
       setSession(sess);
       setUser(sess?.user ?? null);
-      if (sess?.user) {
-        setTimeout(() => loadContext(sess.user.id), 0);
-      } else {
-        setRoles([]); setTenant(null);
+
+      if (!sess?.user) {
+        setRoles([]);
+        setTenant(null);
+        setLoading(false);
+        return;
+      }
+
+      // Supabase emits INITIAL_SESSION with the restored session. Do not call
+      // getSession() here: auth callbacks run under the client's auth lock and
+      // a second auth operation can trigger a Navigator LockManager deadlock.
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "USER_UPDATED") {
+        setLoading(true);
+        window.setTimeout(() => {
+          if (active) void loadContext(sess.user.id);
+        }, 0);
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) loadContext(data.session.user.id).finally(() => setLoading(false));
-      else setLoading(false);
-    });
-
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
-
-  async function loadContext(uid: string) {
-    const [{ data: rs }, { data: profile }] = await Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
-    ]);
-    setRoles((rs ?? []).map((r: any) => r.role as AppRole));
-    if (profile?.tenant_id) {
-      const { data: t } = await supabase.from("tenants")
-        .select("id,name,currency").eq("id", profile.tenant_id).maybeSingle();
-      if (t) setTenant(t as Tenant);
-    }
-    setLoading(false);
-  }
 
   const hasRole = (...r: AppRole[]) => {
     const expanded = new Set<string>(roles);
@@ -107,10 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-
 export const useAuth = () => useContext(Ctx);
 
-// Roles surfaced in the Company-Admin user-creation UI (the 6 you specified).
 export const ASSIGNABLE_ROLES: AppRole[] = [
   "super_admin","admin","executive","finance","credit","operations","sales","projects",
 ];
@@ -126,7 +142,6 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   sales: "Sales",
   projects: "Projects",
   customer: "Customer",
-  // legacy
   credit_officer: "Credit (legacy)",
   operations_officer: "Operations (legacy)",
   site_monitoring_officer: "Site Monitoring (legacy)",
