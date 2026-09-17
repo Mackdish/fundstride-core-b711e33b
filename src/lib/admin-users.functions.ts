@@ -3,24 +3,30 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ROLES = [
-  "super_admin", "admin", "executive", "finance", "credit", "operations", "sales", "projects",
+  "super_admin", "admin", "executive", "finance", "credit", "operations",
 ] as const;
 
-type Ctx = { supabase: any; userId: string };
-
-/** Confirms the caller administers a company and returns that company's id. */
-async function assertCompanyAdminTenant(ctx: Ctx): Promise<string> {
-  const { data } = await ctx.supabase
-    .from("user_roles").select("role,tenant_id").eq("user_id", ctx.userId)
-    .in("role", ["super_admin", "admin"]).limit(1).maybeSingle();
-  if (!data?.tenant_id) throw new Error("Forbidden: company admins only");
-  return data.tenant_id as string;
+// Lazy server-only import keeps the service-role client out of any
+// client-reachable module graph. See tanstack-supabase-import-graph.
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
 }
 
-async function assertSameTenant(ctx: Ctx, tenantId: string, targetUserId: string) {
-  const { data } = await ctx.supabase.from("profiles")
+async function assertSuperAdminAndGetTenant(userId: string): Promise<string> {
+  const admin = await getAdmin();
+  const { data: role } = await admin
+    .from("user_roles").select("role,tenant_id").eq("user_id", userId)
+    .eq("role", "super_admin").maybeSingle();
+  if (!role) throw new Error("Forbidden: super_admin only");
+  return role.tenant_id as string;
+}
+
+async function assertSameTenant(callerTenant: string, targetUserId: string) {
+  const admin = await getAdmin();
+  const { data } = await admin.from("profiles")
     .select("tenant_id").eq("id", targetUserId).maybeSingle();
-  if (!data || data.tenant_id !== tenantId) throw new Error("Forbidden: cross-company action");
+  if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
 }
 
 export const createUser = createServerFn({ method: "POST" })
@@ -33,24 +39,25 @@ export const createUser = createServerFn({ method: "POST" })
     roles: z.array(z.enum(ROLES)).min(1).max(9),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertCompanyAdminTenant(context);
-    const { signUpAppUser } = await import("./provision.server");
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    const admin = await getAdmin();
 
-    const uid = await signUpAppUser({
+    const { data: created, error } = await admin.auth.admin.createUser({
       email: data.email,
       password: data.password,
-      metadata: { full_name: data.full_name, tenant_id: tenantId },
+      email_confirm: true,
+      user_metadata: { full_name: data.full_name, tenant_id: tenantId },
+    });
+    if (error || !created.user) throw new Error(error?.message ?? "Failed to create user");
+    const uid = created.user.id;
+
+    await admin.from("profiles").upsert({
+      id: uid, email: data.email, full_name: data.full_name,
+      phone: data.phone ?? null, tenant_id: tenantId,
     });
 
-    await context.supabase.from("profiles").update({
-      email: data.email,
-      full_name: data.full_name,
-      phone: data.phone ?? null,
-      status: "active",
-    }).eq("id", uid);
-
-    await context.supabase.from("user_roles").delete().eq("user_id", uid);
-    const { error: re } = await context.supabase.from("user_roles").insert(
+    await admin.from("user_roles").delete().eq("user_id", uid);
+    const { error: re } = await admin.from("user_roles").insert(
       data.roles.map((role) => ({ user_id: uid, role, tenant_id: tenantId })),
     );
     if (re) throw new Error(re.message);
@@ -65,10 +72,11 @@ export const updateUserRoles = createServerFn({ method: "POST" })
     roles: z.array(z.enum(ROLES)).min(1).max(9),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertCompanyAdminTenant(context);
-    await assertSameTenant(context, tenantId, data.user_id);
-    await context.supabase.from("user_roles").delete().eq("user_id", data.user_id);
-    const { error } = await context.supabase.from("user_roles")
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
+    const admin = await getAdmin();
+    await admin.from("user_roles").delete().eq("user_id", data.user_id);
+    const { error } = await admin.from("user_roles")
       .insert(data.roles.map((role) => ({ user_id: data.user_id, role, tenant_id: tenantId })));
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -81,9 +89,10 @@ export const setUserStatus = createServerFn({ method: "POST" })
     status: z.enum(["active", "suspended"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertCompanyAdminTenant(context);
-    await assertSameTenant(context, tenantId, data.user_id);
-    const { error } = await context.supabase.from("profiles")
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
+    const admin = await getAdmin();
+    const { error } = await admin.from("profiles")
       .update({ status: data.status }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -93,19 +102,12 @@ export const deleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertCompanyAdminTenant(context);
-    await assertSameTenant(context, tenantId, data.user_id);
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
     if (data.user_id === context.userId) throw new Error("Cannot delete your own account");
-
-    // Revoke all access first (works without privileged keys).
-    await context.supabase.from("user_roles").delete().eq("user_id", data.user_id);
-    const { error } = await context.supabase.from("profiles").delete().eq("id", data.user_id);
+    const admin = await getAdmin();
+    const { error } = await admin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
-
-    // Remove the login itself when a privileged key is available.
-    const { optionalAdminClient } = await import("./provision.server");
-    const admin = await optionalAdminClient();
-    if (admin) await admin.auth.admin.deleteUser(data.user_id);
     return { ok: true };
   });
 
@@ -116,24 +118,18 @@ export const setUserPassword = createServerFn({ method: "POST" })
     new_password: z.string().min(8).max(72),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertCompanyAdminTenant(context);
-    await assertSameTenant(context, tenantId, data.user_id);
-    const { data: prof } = await context.supabase.from("profiles")
-      .select("email").eq("id", data.user_id).maybeSingle();
+    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    await assertSameTenant(tenantId, data.user_id);
+    const admin = await getAdmin();
+    const { data: prof } = await admin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
     if (!prof?.email) throw new Error("User not found");
-
-    const { optionalAdminClient, sendPasswordResetEmail } = await import("./provision.server");
-    const admin = await optionalAdminClient();
-    if (admin) {
-      const { error } = await admin.auth.admin.updateUserById(data.user_id, {
-        password: data.new_password, email_confirm: true, ban_duration: "none",
-      } as any);
-      if (error) throw new Error(error.message);
-      await context.supabase.from("profiles").update({ status: "active" }).eq("id", data.user_id);
-      return { ok: true, email: prof.email, emailed: false };
-    }
-
-    await sendPasswordResetEmail(prof.email);
-    await context.supabase.from("profiles").update({ status: "active" }).eq("id", data.user_id);
-    return { ok: true, email: prof.email, emailed: true };
+    // Set password directly and confirm email so the user can sign in immediately.
+    const { error } = await admin.auth.admin.updateUserById(data.user_id, {
+      password: data.new_password,
+      email_confirm: true,
+      ban_duration: "none",
+    } as any);
+    if (error) throw new Error(error.message);
+    await admin.from("profiles").update({ status: "active" }).eq("id", data.user_id);
+    return { ok: true, email: prof.email };
   });
