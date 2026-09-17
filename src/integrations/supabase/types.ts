@@ -666,6 +666,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "credit_monitoring_reports_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_monitoring_reports_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_monitoring_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "credit_monitoring_reports_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -1236,6 +1257,20 @@ export type Database = {
             columns: ["appraisal_id"]
             isOneToOne: false
             referencedRelation: "appraisals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_facilities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loan_facilities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
@@ -2193,6 +2228,20 @@ export type Database = {
           works_pending?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "site_visits_drawdown_request_id_fkey"
+            columns: ["drawdown_request_id"]
+            isOneToOne: false
+            referencedRelation: "drawdown_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_visits_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_facilities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "site_visits_project_id_fkey"
             columns: ["project_id"]
