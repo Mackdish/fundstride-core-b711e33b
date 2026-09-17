@@ -123,8 +123,8 @@ export const getCompanyDetails = createServerFn({ method: "GET" })
       admin.from("tenant_settings").select("*").eq("tenant_id", tid).maybeSingle(),
       admin.from("profiles").select("id,email,full_name,phone,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }),
       admin.from("user_roles").select("user_id,role").eq("tenant_id", tid),
-      admin.from("customers").select("id,name,type,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
-      admin.from("projects").select("id,name,status,budget_amount,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+      admin.from("customers").select("id,name,customer_type,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
+      admin.from("projects").select("id,name,status,expected_value,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
       admin.from("loan_facilities").select("id,account_number,status,approved_amount,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
       admin.from("payments").select("id,amount,status,created_at").eq("tenant_id", tid).order("created_at", { ascending: false }).limit(50),
     ]);
