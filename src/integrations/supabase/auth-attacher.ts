@@ -2,14 +2,36 @@
 import { createMiddleware } from '@tanstack/react-start'
 import { supabase } from './client'
 
+let accessToken: string | null = null
+let initialSessionReady = false
+let resolveInitialSession: (() => void) | undefined
+
+const initialSession = new Promise<void>((resolve) => {
+  resolveInitialSession = resolve
+})
+
+// Keep the latest token in memory from auth events. Do not call getSession()
+// from function middleware: it can execute while Supabase's auth lock is held,
+// causing Navigator LockManager contention.
+supabase.auth.onAuthStateChange((event, session) => {
+  accessToken = session?.access_token ?? null
+
+  if (event === 'INITIAL_SESSION' && !initialSessionReady) {
+    initialSessionReady = true
+    resolveInitialSession?.()
+  }
+})
+
 // Must be registered as a global `functionMiddleware` in `src/start.ts`; otherwise
 // the browser never attaches the bearer token to serverFn RPCs.
 export const attachSupabaseAuth = createMiddleware({ type: 'function' }).client(
   async ({ next }) => {
-    const { data } = await supabase.auth.getSession()
-    const token = data.session?.access_token
+    if (!initialSessionReady) {
+      await initialSession
+    }
+
     return next({
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     })
   },
 )
