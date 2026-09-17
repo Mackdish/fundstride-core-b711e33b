@@ -1,4 +1,4 @@
-// PWA service worker registration with strict guards for Lovable preview/dev.
+// PWA service worker registration with strict guards for preview/dev.
 // Also exposes the beforeinstallprompt event so UI can trigger the native install dialog.
 
 import { Workbox } from "workbox-window";
@@ -18,9 +18,6 @@ function isPreviewOrDev(): boolean {
   if (window.self !== window.top) return true;
   const h = window.location.hostname;
   if (h.startsWith("id-preview--") || h.startsWith("preview--")) return true;
-  if (h === "lovableproject.com" || h.endsWith(".lovableproject.com")) return true;
-  if (h === "lovableproject-dev.com" || h.endsWith(".lovableproject-dev.com")) return true;
-  if (h === "beta.lovable.dev" || h.endsWith(".beta.lovable.dev")) return true;
   if (new URL(window.location.href).searchParams.get("sw") === "off") return true;
   return false;
 }

@@ -290,13 +290,10 @@ Content
 Kinetic_BUILDTRACK360.docx
 docx
 
-This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://fundstride-core.lovable.app
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/ebfe3a2b-ec70-426c-aeef-eb966499d1ea).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
