@@ -79,7 +79,7 @@ function CompanyDetail() {
       <Section title="Customers">
         <DataTable rows={customers} columns={[
           { header: "Name", cell: (c: any) => c.name },
-          { header: "Type", cell: (c: any) => c.type ?? "—" },
+          { header: "Type", cell: (c: any) => c.customer_type ?? "—" },
           { header: "Status", cell: (c: any) => <StatusBadge status={c.status ?? "—"} /> },
           { header: "Created", cell: (c: any) => formatDate(c.created_at) },
         ]} empty={<EmptyState title="No customers" message="—" />} />
@@ -88,7 +88,7 @@ function CompanyDetail() {
       <Section title="Projects">
         <DataTable rows={projects} columns={[
           { header: "Name", cell: (p: any) => p.name },
-          { header: "Budget", cell: (p: any) => p.budget_amount ? formatKES(p.budget_amount) : "—" },
+          { header: "Value", cell: (p: any) => p.expected_value ? formatKES(p.expected_value) : "—" },
           { header: "Status", cell: (p: any) => <StatusBadge status={p.status ?? "—"} /> },
           { header: "Created", cell: (p: any) => formatDate(p.created_at) },
         ]} empty={<EmptyState title="No projects" message="—" />} />
