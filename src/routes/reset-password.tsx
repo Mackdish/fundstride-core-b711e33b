@@ -13,14 +13,20 @@ function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Supabase places a recovery access_token in the URL hash and auto-establishes
-  // a temporary session via detectSessionInUrl. We wait for that session before
-  // allowing a password update.
+  // Supabase establishes the recovery session during auth initialization and
+  // emits it through INITIAL_SESSION/PASSWORD_RECOVERY/SIGNED_IN. Do not call
+  // getSession() here as a second auth operation during initialization can
+  // contend with the auth client's startup coordination.
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        (event === "INITIAL_SESSION" && session) ||
+        event === "PASSWORD_RECOVERY" ||
+        event === "SIGNED_IN"
+      ) {
+        setReady(true);
+      }
     });
-    supabase.auth.getSession().then(({ data }) => { if (data.session) setReady(true); });
     return () => sub.subscription.unsubscribe();
   }, []);
 
