@@ -31,12 +31,6 @@ async function assertTargetIsManageable(callerRole: "super_admin" | "admin", cal
   }
 }
 
-async function assertSameTenant(callerTenant: string, targetUserId: string) {
-  const admin = await getAdmin();
-  const { data } = await admin.from("profiles")
-    .select("tenant_id").eq("id", targetUserId).maybeSingle();
-  if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
-}
 
 async function assertNoCustomerRole(userId: string) {
   const admin = await getAdmin();
