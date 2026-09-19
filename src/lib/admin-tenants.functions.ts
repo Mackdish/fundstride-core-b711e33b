@@ -12,7 +12,7 @@ async function getAdmin() {
 async function assertPlatformAdmin(userId: string) {
   const supabaseAdmin = await getAdmin();
   const { data } = await supabaseAdmin
-    .from("user_roles").select("role").eq("user_id", userId).in("role", ["platform_admin", "super_admin"]);
+    .from("user_roles").select("role").eq("user_id", userId).eq("role", "platform_admin");
   if (!data || data.length === 0) throw new Error("Forbidden: platform/super admin only");
 }
 
