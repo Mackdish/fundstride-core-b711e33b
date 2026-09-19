@@ -4,13 +4,15 @@ import { useAuth, AppRole } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 
 export function ProtectedRoute({ children, roles }: { children: ReactNode; roles?: AppRole[] }) {
-  const { user, loading, hasRole, roles: myRoles } = useAuth();
+  const { user, loading, hasRole, roles: myRoles, mustChangePassword } = useAuth();
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading…</div>;
   }
 
   if (!user) return <Navigate to="/login" />;
+
+  if (mustChangePassword) return <Navigate to="/reset-password" />;
 
   const isStaff = hasRole(
     "super_admin","platform_admin","admin","executive","finance","credit","operations",
