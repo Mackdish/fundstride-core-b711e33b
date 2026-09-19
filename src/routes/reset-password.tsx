@@ -38,6 +38,16 @@ function ResetPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+
+      const { data: current } = await supabase.auth.getUser();
+      if (current.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ force_password_change: false })
+          .eq("id", current.user.id);
+        if (profileError) throw profileError;
+      }
+
       toast.success("Password updated — please sign in");
       await supabase.auth.signOut();
       nav({ to: "/login", replace: true });
