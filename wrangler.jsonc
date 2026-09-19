@@ -1,15 +1,22 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "build",
-  "compatibility_date": "2026-09-17",
+  "compatibility_date": "2026-09-19",
   "compatibility_flags": [
-    "nodejs_compat"
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env"
   ],
   "main": "src/server.ts",
-
   "observability": {
     "enabled": true
   },
-
-  "vars": {}
+  "vars": {
+    "SUPABASE_URL": "https://iowdvriwewtasvaveoxc.supabase.co"
+  },
+  "secrets": {
+    "required": [
+      "SUPABASE_PUBLISHABLE_KEY",
+      "SUPABASE_SECRET_KEY"
+    ]
+  }
 }
