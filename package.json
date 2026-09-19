@@ -88,5 +88,6 @@
     "preview": "vite preview"
   },
   "sideEffects": false,
-  "type": "module"
+  "type": "module",
+  "packageManager": "bun@1.4.2"
 }
