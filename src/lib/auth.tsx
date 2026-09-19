@@ -3,24 +3,16 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
-  | "platform_admin"
-  | "super_admin" | "admin" | "executive" | "finance" | "credit" | "operations"
-  | "sales" | "projects"
-  | "customer"
-  // legacy aliases (kept so older data + guards keep working during transition)
+  | "platform_admin" | "super_admin" | "admin" | "executive" | "finance"
+  | "credit" | "operations" | "sales" | "projects" | "customer"
   | "credit_officer" | "operations_officer" | "site_monitoring_officer"
   | "finance_officer" | "risk_compliance_officer" | "developer" | "contractor";
 
 export type Tenant = { id: string; name: string; currency: string };
 
 interface AuthCtx {
-  user: User | null;
-  session: Session | null;
-  roles: AppRole[];
-  tenant: Tenant | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-  hasRole: (...r: AppRole[]) => boolean;
+  user: User | null; session: Session | null; roles: AppRole[]; tenant: Tenant | null;
+  loading: boolean; signOut: () => Promise<void>; hasRole: (...r: AppRole[]) => boolean;
   isStaff: boolean;
 }
 
@@ -30,21 +22,17 @@ const Ctx = createContext<AuthCtx>({
 });
 
 const ROLE_ALIASES: Record<string, AppRole[]> = {
-  credit_officer: ["credit"],
-  finance_officer: ["finance"],
-  operations_officer: ["operations"],
-  site_monitoring_officer: ["operations"],
-  risk_compliance_officer: ["admin"],
-  credit: ["credit_officer"],
-  finance: ["finance_officer"],
-  operations: ["operations_officer", "site_monitoring_officer"],
+  credit_officer: ["credit"], finance_officer: ["finance"],
+  operations_officer: ["operations"], site_monitoring_officer: ["operations"],
+  risk_compliance_officer: ["admin"], credit: ["credit_officer"],
+  finance: ["finance_officer"], operations: ["operations_officer", "site_monitoring_officer"],
   admin: ["risk_compliance_officer"],
 };
 
 const STAFF_ROLES: AppRole[] = [
   "super_admin","admin","executive","finance","credit","operations","sales","projects",
-  "credit_officer","operations_officer","site_monitoring_officer",
-  "finance_officer","risk_compliance_officer",
+  "credit_officer","operations_officer","site_monitoring_officer","finance_officer",
+  "risk_compliance_officer",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -56,72 +44,121 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    let subscription: { unsubscribe: () => void } | undefined;
 
     const loadContext = async (uid: string) => {
-      const [{ data: rs }, { data: profile }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", uid),
-        supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
-      ]);
+      try {
+        const [{ data: rs, error: roleError }, { data: profile, error: profileError }] =
+          await Promise.all([
+            supabase.from("user_roles").select("role").eq("user_id", uid),
+            supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
+          ]);
 
-      if (!active) return;
-
-      setRoles((rs ?? []).map((r: any) => r.role as AppRole));
-
-      if (profile?.tenant_id) {
-        const { data: t } = await supabase.from("tenants")
-          .select("id,name,currency").eq("id", profile.tenant_id).maybeSingle();
         if (!active) return;
-        setTenant(t ? (t as Tenant) : null);
-      } else {
-        setTenant(null);
-      }
+        if (roleError) throw roleError;
+        if (profileError) throw profileError;
 
-      setLoading(false);
+        setRoles((rs ?? []).map((r: { role: string }) => r.role as AppRole));
+
+        if (profile?.tenant_id) {
+          const { data: t, error } = await supabase
+            .from("tenants").select("id,name,currency").eq("id", profile.tenant_id).maybeSingle();
+          if (!active) return;
+          if (error) throw error;
+          setTenant(t ? (t as Tenant) : null);
+        } else {
+          setTenant(null);
+        }
+      } catch (error) {
+        console.error("[Auth] Failed to load user context:", error);
+        if (active) {
+          setRoles([]);
+          setTenant(null);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (!active) return;
+    const initialize = async () => {
+      try {
+        // Complete Supabase initialization before registering the auth listener.
+        // This avoids init-time auth races and makes the initial state deterministic.
+        const { data, error } = await supabase.auth.getSession();
+        if (!active) return;
+        if (error) throw error;
 
-      setSession(sess);
-      setUser(sess?.user ?? null);
+        const sess = data.session ?? null;
+        setSession(sess);
+        setUser(sess?.user ?? null);
 
-      if (!sess?.user) {
-        setRoles([]);
-        setTenant(null);
-        setLoading(false);
-        return;
+        if (sess?.user) {
+          await loadContext(sess.user.id);
+        } else {
+          setRoles([]);
+          setTenant(null);
+          setLoading(false);
+        }
+
+        if (!active) return;
+
+        const result = supabase.auth.onAuthStateChange((event, nextSession) => {
+          if (!active) return;
+
+          setSession(nextSession);
+          setUser(nextSession?.user ?? null);
+
+          if (!nextSession?.user) {
+            setRoles([]);
+            setTenant(null);
+            setLoading(false);
+            return;
+          }
+
+          if (event !== "INITIAL_SESSION") {
+            setLoading(true);
+            // Never perform Supabase database operations inside the auth callback.
+            window.setTimeout(() => {
+              if (active) void loadContext(nextSession.user.id);
+            }, 0);
+          }
+        });
+
+        subscription = result.data.subscription;
+      } catch (error) {
+        console.error("[Auth] Initialization failed:", error);
+        if (active) {
+          setUser(null); setSession(null); setRoles([]); setTenant(null); setLoading(false);
+        }
       }
+    };
 
-      // Supabase emits INITIAL_SESSION with the restored session. Do not call
-      // getSession() here: auth callbacks run under the client's auth lock and
-      // a second auth operation can trigger a Navigator LockManager deadlock.
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "USER_UPDATED") {
-        setLoading(true);
-        window.setTimeout(() => {
-          if (active) void loadContext(sess.user.id);
-        }, 0);
-      }
-    });
+    void initialize();
 
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
-  const hasRole = (...r: AppRole[]) => {
+  const hasRole = (...requiredRoles: AppRole[]) => {
     const expanded = new Set<string>(roles);
-    for (const role of roles) (ROLE_ALIASES[role] ?? []).forEach((a) => expanded.add(a));
-    return r.some((role) => expanded.has(role));
+    for (const role of roles) {
+      for (const alias of ROLE_ALIASES[role] ?? []) expanded.add(alias);
+    }
+    return requiredRoles.some((role) => expanded.has(role));
   };
-  const isStaff = roles.some((r) => STAFF_ROLES.includes(r));
+
+  const isStaff = roles.some((role) => STAFF_ROLES.includes(role));
 
   return (
     <Ctx.Provider value={{
       user, session, roles, tenant, loading,
-      signOut: async () => { await supabase.auth.signOut(); },
+      signOut: () => supabase.auth.signOut(),
       hasRole, isStaff,
-    }}>{children}</Ctx.Provider>
+    }}>
+      {children}
+    </Ctx.Provider>
   );
 }
 
@@ -132,21 +169,11 @@ export const ASSIGNABLE_ROLES: AppRole[] = [
 ];
 
 export const ROLE_LABELS: Record<AppRole, string> = {
-  platform_admin: "Platform Admin",
-  super_admin: "Super Admin",
-  admin: "Admin",
-  executive: "Executive",
-  finance: "Finance",
-  credit: "Credit",
-  operations: "Operations",
-  sales: "Sales",
-  projects: "Projects",
-  customer: "Customer",
-  credit_officer: "Credit (legacy)",
-  operations_officer: "Operations (legacy)",
-  site_monitoring_officer: "Site Monitoring (legacy)",
-  finance_officer: "Finance (legacy)",
-  risk_compliance_officer: "Risk & Compliance (legacy)",
-  developer: "Developer",
+  platform_admin: "Platform Admin", super_admin: "Super Admin", admin: "Admin",
+  executive: "Executive", finance: "Finance", credit: "Credit", operations: "Operations",
+  sales: "Sales", projects: "Projects", customer: "Customer",
+  credit_officer: "Credit (legacy)", operations_officer: "Operations (legacy)",
+  site_monitoring_officer: "Site Monitoring (legacy)", finance_officer: "Finance (legacy)",
+  risk_compliance_officer: "Risk & Compliance (legacy)", developer: "Developer",
   contractor: "Contractor",
 };
