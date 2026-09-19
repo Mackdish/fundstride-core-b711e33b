@@ -135,15 +135,16 @@ export const setUserPassword = createServerFn({ method: "POST" })
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
     const admin = await getAdmin();
-    const { data: prof } = await admin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
+    const { data: prof } = await admin.from("profiles").select("email,status").eq("id", data.user_id).maybeSingle();
     if (!prof?.email) throw new Error("User not found");
-    // Set password directly and confirm email so the user can sign in immediately.
+    // Resetting a password must never silently reactivate a suspended account.
+    const ban_duration = prof.status === "active" ? "none" : "876000h";
     const { error } = await admin.auth.admin.updateUserById(data.user_id, {
       password: data.new_password,
       email_confirm: true,
-      ban_duration: "none",
-    } as any);
+      ban_duration,
+    });
     if (error) throw new Error(error.message);
-    await admin.from("profiles").update({ status: "active" }).eq("id", data.user_id);
+    await admin.from("profiles").update({ status: prof.status }).eq("id", data.user_id);
     return { ok: true, email: prof.email };
   });
