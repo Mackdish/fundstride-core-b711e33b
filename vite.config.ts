@@ -27,6 +27,7 @@ export default defineConfig({
       manifest: false,
 
       workbox: {
+        cleanupOutdatedCaches: true,
         navigateFallback: null,
 
         globPatterns: [
@@ -50,7 +51,7 @@ export default defineConfig({
             handler: 'NetworkFirst',
 
             options: {
-              cacheName: 'html-cache',
+              cacheName: 'buildtrack360-html-v2',
               networkTimeoutSeconds: 5,
             },
           },
@@ -65,7 +66,7 @@ export default defineConfig({
             handler: 'CacheFirst',
 
             options: {
-              cacheName: 'asset-cache',
+              cacheName: 'buildtrack360-assets-v2',
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30,
