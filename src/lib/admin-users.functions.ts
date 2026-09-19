@@ -27,6 +27,10 @@ async function assertSameTenant(callerTenant: string, targetUserId: string) {
   const { data } = await admin.from("profiles")
     .select("tenant_id").eq("id", targetUserId).maybeSingle();
   if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
+  const { data: targetRoles } = await admin.from("user_roles").select("role").eq("user_id", targetUserId);
+  if ((targetRoles ?? []).some((r: any) => r.role === "platform_admin")) {
+    throw new Error("Forbidden: platform administrator");
+  }
 }
 
 export const createUser = createServerFn({ method: "POST" })
@@ -41,6 +45,8 @@ export const createUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     const admin = await getAdmin();
+
+    if (data.roles.includes("platform_admin")) throw new Error("Forbidden: platform administrator role cannot be assigned here");
 
     const { data: created, error } = await admin.auth.admin.createUser({
       email: data.email,
@@ -73,7 +79,9 @@ export const updateUserRoles = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    if (data.user_id === context.userId) throw new Error("Cannot change your own roles");
     await assertSameTenant(tenantId, data.user_id);
+    if (data.roles.includes("platform_admin")) throw new Error("Forbidden: platform administrator role cannot be assigned here");
     const admin = await getAdmin();
     await admin.from("user_roles").delete().eq("user_id", data.user_id);
     const { error } = await admin.from("user_roles")
@@ -92,9 +100,13 @@ export const setUserStatus = createServerFn({ method: "POST" })
     const tenantId = await assertSuperAdminAndGetTenant(context.userId);
     await assertSameTenant(tenantId, data.user_id);
     const admin = await getAdmin();
+    if (data.user_id === context.userId) throw new Error("Cannot change your own status");
     const { error } = await admin.from("profiles")
       .update({ status: data.status }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
+    const ban_duration = data.status === "active" ? "none" : "876000h";
+    const { error: authError } = await admin.auth.admin.updateUserById(data.user_id, { ban_duration });
+    if (authError) throw new Error("Failed to update authentication status");
     return { ok: true };
   });
 
@@ -108,6 +120,8 @@ export const deleteUser = createServerFn({ method: "POST" })
     const admin = await getAdmin();
     const { error } = await admin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
+    await admin.from("profiles").delete().eq("id", data.user_id);
+    await admin.from("user_roles").delete().eq("user_id", data.user_id);
     return { ok: true };
   });
 
