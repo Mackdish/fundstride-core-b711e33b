@@ -14,10 +14,9 @@ USING (
   bucket_id = 'documents'
   AND EXISTS (
     SELECT 1
-    FROM public.project_documents d
-    JOIN public.projects p ON p.id = d.project_id
+    FROM public.projects p
     LEFT JOIN public.customers c ON c.id = p.customer_id
-    WHERE d.file_url = storage.objects.name
+    WHERE p.id::text = split_part(storage.objects.name, '/', 3)
       AND p.tenant_id = public.current_tenant_id()
       AND (
         public.is_staff(auth.uid())
@@ -53,10 +52,9 @@ USING (
   bucket_id = 'documents'
   AND EXISTS (
     SELECT 1
-    FROM public.project_documents d
-    JOIN public.projects p ON p.id = d.project_id
+    FROM public.projects p
     LEFT JOIN public.customers c ON c.id = p.customer_id
-    WHERE d.file_url = storage.objects.name
+    WHERE p.id::text = split_part(storage.objects.name, '/', 3)
       AND p.tenant_id = public.current_tenant_id()
       AND (
         public.is_staff(auth.uid())
