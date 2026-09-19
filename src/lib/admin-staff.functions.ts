@@ -7,13 +7,28 @@ async function getAdmin() {
   return supabaseAdmin;
 }
 
-async function assertSuperAdminAndGetTenant(userId: string): Promise<string> {
+async function assertStaffManagerAndGetTenant(userId: string): Promise<{ tenantId: string; role: "super_admin" | "admin" }> {
   const admin = await getAdmin();
-  const { data: role } = await admin
-    .from("user_roles").select("role,tenant_id").eq("user_id", userId)
-    .in("role", ["super_admin", "admin"]).maybeSingle();
-  if (!role) throw new Error("Forbidden: company admins only");
-  return role.tenant_id as string;
+  const { data: roles } = await admin.from("user_roles")
+    .select("role,tenant_id").eq("user_id", userId).in("role", ["super_admin", "admin"]);
+  if (!roles?.length) throw new Error("Forbidden: company admins only");
+  const role = roles.find((r) => r.role === "super_admin") ?? roles[0];
+  return { tenantId: role.tenant_id as string, role: role.role as "super_admin" | "admin" };
+}
+
+async function assertTargetIsManageable(callerRole: "super_admin" | "admin", callerTenant: string, targetUserId: string) {
+  const admin = await getAdmin();
+  const { data } = await admin.from("profiles").select("tenant_id").eq("id", targetUserId).maybeSingle();
+  if (!data || data.tenant_id !== callerTenant) throw new Error("Forbidden: cross-tenant action");
+
+  const { data: targetRoles } = await admin.from("user_roles").select("role").eq("user_id", targetUserId);
+  const roles = new Set((targetRoles ?? []).map((r: any) => r.role));
+  if (roles.has("platform_admin") || roles.has("super_admin")) {
+    throw new Error("Forbidden: higher-privileged account");
+  }
+  if (callerRole === "admin" && roles.has("admin")) {
+    throw new Error("Forbidden: only a super admin can manage administrators");
+  }
 }
 
 async function assertSameTenant(callerTenant: string, targetUserId: string) {
@@ -58,7 +73,8 @@ export const createStaffMember = createServerFn({ method: "POST" })
     force_password_change: z.boolean().default(true),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
+    const manager = await assertStaffManagerAndGetTenant(context.userId);
+    const tenantId = manager.tenantId;
     const admin = await getAdmin();
     const full_name = `${data.first_name} ${data.last_name}`.trim();
 
@@ -71,6 +87,9 @@ export const createStaffMember = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "Failed to create user");
     const uid = created.user.id;
     await assertNoCustomerRole(uid);
+    if (manager.role === "admin" && data.role === "admin") {
+      throw new Error("Forbidden: only a super admin can create administrators");
+    }
 
     const profile = {
       id: uid,
@@ -108,8 +127,9 @@ export const updateStaffMember = createServerFn({ method: "POST" })
     user_id: z.string().uuid(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
-    await assertSameTenant(tenantId, data.user_id);
+    const manager = await assertStaffManagerAndGetTenant(context.userId);
+    const tenantId = manager.tenantId;
+    await assertTargetIsManageable(manager.role, tenantId, data.user_id);
     const admin = await getAdmin();
     const full_name = `${data.first_name} ${data.last_name}`.trim();
     await assertNoCustomerRole(data.user_id);
@@ -146,8 +166,9 @@ export const setStaffStatus = createServerFn({ method: "POST" })
     status: z.enum(["active", "inactive", "suspended"]),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
-    await assertSameTenant(tenantId, data.user_id);
+    const manager = await assertStaffManagerAndGetTenant(context.userId);
+    const tenantId = manager.tenantId;
+    await assertTargetIsManageable(manager.role, tenantId, data.user_id);
     if (data.user_id === context.userId) throw new Error("Cannot change your own status");
     const admin = await getAdmin();
     const { error } = await admin.from("profiles")
@@ -163,8 +184,9 @@ export const deleteStaffMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ user_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
-    await assertSameTenant(tenantId, data.user_id);
+    const manager = await assertStaffManagerAndGetTenant(context.userId);
+    const tenantId = manager.tenantId;
+    await assertTargetIsManageable(manager.role, tenantId, data.user_id);
     if (data.user_id === context.userId) throw new Error("Cannot delete your own account");
     const admin = await getAdmin();
     await admin.from("user_roles").delete().eq("user_id", data.user_id);
@@ -181,8 +203,9 @@ export const resetStaffPassword = createServerFn({ method: "POST" })
     new_password: z.string().min(8).max(72),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const tenantId = await assertSuperAdminAndGetTenant(context.userId);
-    await assertSameTenant(tenantId, data.user_id);
+    const manager = await assertStaffManagerAndGetTenant(context.userId);
+    const tenantId = manager.tenantId;
+    await assertTargetIsManageable(manager.role, tenantId, data.user_id);
     const admin = await getAdmin();
     const { data: prof } = await admin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
     if (!prof?.email) throw new Error("User not found");
