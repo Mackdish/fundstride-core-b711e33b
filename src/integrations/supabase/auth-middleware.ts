@@ -46,6 +46,19 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       throw new Error('Unauthorized: No request headers available');
     }
 
+    const origin = request.headers.get('origin');
+    if (origin) {
+      let requestOrigin: string;
+      try {
+        requestOrigin = new URL(request.url).origin;
+      } catch {
+        throw new Error('Unauthorized: Invalid request URL');
+      }
+      if (origin !== requestOrigin) {
+        throw new Error('Forbidden: cross-origin request');
+      }
+    }
+
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
       throw new Error('Unauthorized: No authorization header provided');
@@ -86,6 +99,21 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
 
     if (!data.claims.sub) {
       throw new Error('Unauthorized: No user ID found in token');
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('status')
+      .eq('id', data.claims.sub)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('[Supabase] Could not verify account status:', profileError.message);
+      throw new Error('Unauthorized: Account status could not be verified');
+    }
+
+    if (!profile || profile.status !== 'active') {
+      throw new Error('Unauthorized: Account is not active');
     }
 
     return next({
