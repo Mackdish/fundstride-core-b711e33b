@@ -62,30 +62,48 @@ export const createCustomerLogin = createServerFn({ method: "POST" })
     if (cErr) throw new Error(cErr.message);
     if (!cust || cust.tenant_id !== tenantId) throw new Error("Customer not found");
 
-    // Find existing auth user by email, otherwise create one.
+    // Never take over an existing identity merely because its email matches.
+    // An existing identity must already belong to this tenant and customer.
     let uid: string | null = null;
-    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const { data: list, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (listError) throw new Error("Unable to verify existing account");
+
     const existing = list?.users?.find((u) => u.email?.toLowerCase() === data.email.toLowerCase());
     if (existing) {
       uid = existing.id;
       await assertNoStaffRoles(uid);
+
+      const { data: existingProfile, error: profileError } = await admin
+        .from("profiles").select("tenant_id,status").eq("id", uid).maybeSingle();
+      if (profileError) throw new Error("Unable to verify existing account");
+      if (!existingProfile || existingProfile.tenant_id !== tenantId) {
+        throw new Error("An account with this email already exists in another company");
+      }
+      if (existingProfile.status !== "active") throw new Error("The existing account is not active");
+      if (cust.owner_user_id && cust.owner_user_id !== uid) {
+        throw new Error("This customer is already linked to another login");
+      }
+
+      const { data: existingCustomer, error: existingCustomerError } = await admin
+        .from("customers").select("id").eq("tenant_id", tenantId).eq("owner_user_id", uid).maybeSingle();
+      if (existingCustomerError) throw new Error("Unable to verify customer ownership");
+      if (existingCustomer && existingCustomer.id !== cust.id) {
+        throw new Error("This login is already linked to another customer");
+      }
+
       const { error: upErr } = await admin.auth.admin.updateUserById(uid, {
         password: data.password, email_confirm: true,
-      } as any);
-      if (upErr) throw new Error(upErr.message);
+      });
+      if (upErr) throw new Error("Unable to update customer login");
     } else {
       const { data: created, error } = await admin.auth.admin.createUser({
         email: data.email,
         password: data.password,
         email_confirm: true,
-        user_metadata: {
-          full_name: data.full_name ?? cust.name,
-          tenant_id: tenantId,
-        },
+        user_metadata: { full_name: data.full_name ?? cust.name, tenant_id: tenantId },
       });
       if (error || !created.user) throw new Error(error?.message ?? "Failed to create login");
       uid = created.user.id;
-      await assertNoStaffRoles(uid);
     }
 
     // Ensure profile in same tenant.
