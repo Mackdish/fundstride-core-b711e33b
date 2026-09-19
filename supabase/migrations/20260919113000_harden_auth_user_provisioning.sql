@@ -12,7 +12,7 @@ DECLARE
   v_company text;
   v_requested_tenant text;
 BEGIN
-  v_requested_tenant := NULLIF(trim(NEW.raw_user_meta_data->>'tenant_id'), '');
+  v_requested_tenant := NULLIF(trim(NEW.raw_app_meta_data->>'provisioned_tenant_id'), '');
 
   IF v_requested_tenant IS NOT NULL THEN
     BEGIN
