@@ -73,6 +73,13 @@ export const createCustomerLogin = createServerFn({ method: "POST" })
       uid = existing.id;
       await assertNoStaffRoles(uid);
 
+      const { data: existingRoles, error: existingRolesError } = await admin
+        .from("user_roles").select("role").eq("user_id", uid);
+      if (existingRolesError) throw new Error("Unable to verify existing account");
+      if (!(existingRoles ?? []).some((r: any) => r.role === "customer")) {
+        throw new Error("Existing account is not a customer login");
+      }
+
       const { data: existingProfile, error: profileError } = await admin
         .from("profiles").select("tenant_id,status").eq("id", uid).maybeSingle();
       if (profileError) throw new Error("Unable to verify existing account");
