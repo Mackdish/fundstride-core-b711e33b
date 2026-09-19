@@ -43,6 +43,31 @@ function ProjectDetail() {
 
   const uploadFile = async (file: File) => {
     if (!data?.p) return;
+
+    const MAX_FILE_SIZE = 25 * 1024 * 1024;
+    const ALLOWED_TYPES = new Set([
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+    ]);
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File is too large. Maximum size is 25 MB.");
+      return;
+    }
+    if (!ALLOWED_TYPES.has(file.type)) {
+      toast.error("Unsupported file type. Upload PDF, Office documents, images, or text files.");
+      return;
+    }
+
     setUploading(true);
     try {
       const customerId = (data.p as any).customer_id;
