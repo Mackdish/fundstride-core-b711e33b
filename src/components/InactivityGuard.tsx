@@ -2,8 +2,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 
-// Signs out any authenticated user after 5 minutes of no interaction.
-const IDLE_MS = 5 * 60 * 1000;
+const IDLE_MS = 30 * 60 * 1000;
 const EVENTS = ["mousedown", "keydown", "touchstart", "scroll", "visibilitychange"] as const;
 
 export function InactivityGuard() {
@@ -16,7 +15,7 @@ export function InactivityGuard() {
     const reset = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(async () => {
-        toast.warning("Signed out due to 5 minutes of inactivity");
+        toast.warning("Signed out due to 30 minutes of inactivity");
         await signOut();
       }, IDLE_MS);
     };
