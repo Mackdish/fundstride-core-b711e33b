@@ -1,5 +1,5 @@
-// Server-side Supabase client using the external project's service-role key.
-// Use this only for trusted server-side/admin operations.
+// Server-side Supabase client using the external project's secret key.
+// Falls back to the legacy service-role key during migration. Use only for trusted server-side/admin operations.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -31,7 +31,7 @@ function createSupabaseAdminClient() {
   const SUPABASE_SECRET_KEY =
     process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_SECRET_KEY ? ['SUPABASE_SECRET_KEY'] : []),
