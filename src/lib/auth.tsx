@@ -12,12 +12,13 @@ export type Tenant = { id: string; name: string; currency: string };
 
 interface AuthCtx {
   user: User | null; session: Session | null; roles: AppRole[]; tenant: Tenant | null;
+  mustChangePassword: boolean;
   loading: boolean; signOut: () => Promise<void>; hasRole: (...r: AppRole[]) => boolean;
   isStaff: boolean;
 }
 
 const Ctx = createContext<AuthCtx>({
-  user: null, session: null, roles: [], tenant: null, loading: true,
+  user: null, session: null, roles: [], tenant: null, mustChangePassword: false, loading: true,
   signOut: async () => {}, hasRole: () => false, isStaff: false,
 });
 
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,12 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const [{ data: rs, error: roleError }, { data: profile, error: profileError }] =
           await Promise.all([
             supabase.from("user_roles").select("role").eq("user_id", uid),
-            supabase.from("profiles").select("tenant_id").eq("id", uid).maybeSingle(),
+            supabase.from("profiles").select("tenant_id,status,force_password_change").eq("id", uid).maybeSingle(),
           ]);
 
         if (!active) return;
         if (roleError) throw roleError;
         if (profileError) throw profileError;
+        if (profile?.status !== "active") {
+          await supabase.auth.signOut();
+          return;
+        }
+        setMustChangePassword(profile?.force_password_change === true);
 
         setRoles((rs ?? []).map((r: { role: string }) => r.role as AppRole));
 
@@ -97,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setRoles([]);
           setTenant(null);
+          setMustChangePassword(false);
           setLoading(false);
         }
 
@@ -111,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!nextSession?.user) {
             setRoles([]);
             setTenant(null);
+            setMustChangePassword(false);
             setLoading(false);
             return;
           }
@@ -128,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("[Auth] Initialization failed:", error);
         if (active) {
-          setUser(null); setSession(null); setRoles([]); setTenant(null); setLoading(false);
+          setUser(null); setSession(null); setRoles([]); setTenant(null); setMustChangePassword(false); setLoading(false);
         }
       }
     };
@@ -153,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      user, session, roles, tenant, loading,
+      user, session, roles, tenant, mustChangePassword, loading,
       signOut: () => supabase.auth.signOut(),
       hasRole, isStaff,
     }}>
