@@ -70,7 +70,32 @@ export const getProjectProgressUpdates = createServerFn({ method: "GET" })
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
     if (error) throw new Error("Unable to load progress updates");
-    return { updates: updates ?? [] };
+
+    const { data: history, error: historyError } = await (admin as any)
+      .from("project_progress_update_history")
+      .select("*")
+      .eq("project_id", data.project_id)
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (historyError) throw new Error("Unable to load progress activity history");
+
+    const actorIds = [...new Set((history ?? [])
+      .map((item: any) => item.actor_id)
+      .filter((id: any): id is string => typeof id === "string"))];
+    const { data: actors, error: actorsError } = actorIds.length
+      ? await admin.from("profiles").select("id,full_name,email").in("id", actorIds)
+      : { data: [], error: null };
+    if (actorsError) throw new Error("Unable to load progress history authors");
+    const actorById = new Map((actors ?? []).map((actor: any) => [actor.id, actor]));
+
+    return {
+      updates: updates ?? [],
+      history: (history ?? []).map((item: any) => ({
+        ...item,
+        actor: actorById.get(item.actor_id) ?? null,
+      })),
+    };
   });
 
 export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
