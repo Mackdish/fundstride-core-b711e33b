@@ -242,7 +242,7 @@ function FinancialRow({
         {detail && <p className="mt-1 text-xs text-slate-500 break-words">{detail}</p>}
       </div>
       <div className="shrink-0 sm:text-right">
-        <p className="text-sm font-semibold text-slate-900">{formatKES(amount)}</p>
+        <p className="text-sm font-semibold text-slate-900">{formatKES(amount == null ? amount : Number(amount))}</p>
         <p className="mt-1 text-xs text-slate-400">{date ? formatDate(date) : "—"}</p>
       </div>
     </div>
