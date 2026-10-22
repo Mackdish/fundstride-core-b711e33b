@@ -83,6 +83,12 @@ CREATE POLICY "Customers read published progress photos"
   USING (
     tenant_id = public.current_tenant_id()
     AND EXISTS (
+      SELECT 1 FROM public.user_roles customer_role
+      WHERE customer_role.user_id = auth.uid()
+        AND customer_role.tenant_id = public.current_tenant_id()
+        AND customer_role.role = 'customer'
+    )
+    AND EXISTS (
       SELECT 1
       FROM public.project_progress_updates u
       JOIN public.projects p ON p.id = u.project_id
