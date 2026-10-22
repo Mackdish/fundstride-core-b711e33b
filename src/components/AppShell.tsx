@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth, ROLE_LABELS, AppRole } from "@/lib/auth";
 import {
-  LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin,
+  LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin, Activity,
   HardHat, CreditCard, ShieldAlert, FileText, BarChart3, Settings, LogOut,
   Menu, X, ChevronRight, Briefcase, Target,
 } from "lucide-react";
@@ -16,6 +16,7 @@ const NAV: NavItem[] = [
   { to: "/performance", label: "Financial Performance", icon: BarChart3, roles: ["super_admin","executive","finance","finance_officer","risk_compliance_officer"] },
   { to: "/customers", label: "Customers", icon: Users, roles: ["super_admin","admin","executive","credit","operations","projects","credit_officer","operations_officer"] },
   { to: "/projects", label: "Projects", icon: Building2, roles: ["super_admin","admin","executive","finance","credit","operations","projects","credit_officer","operations_officer","finance_officer"] },
+  { to: "/progress", label: "Construction Progress", icon: Activity, roles: ["platform_admin","super_admin","admin","executive","operations","projects","site_monitoring_officer","operations_officer","credit_officer"] },
   { to: "/sales-leads", label: "Sales Leads", icon: Target, roles: ["super_admin","executive","sales","finance","projects","credit_officer","operations_officer","finance_officer"] },
   { to: "/appraisals", label: "Appraisals", icon: FileCheck2, roles: ["super_admin","executive","credit_officer","risk_compliance_officer"] },
   { to: "/loans", label: "Loans", icon: Banknote, roles: ["super_admin","executive","finance","credit_officer","finance_officer"] },
