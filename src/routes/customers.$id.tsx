@@ -7,6 +7,7 @@ import { EditDeleteBar } from "@/components/EditDeleteBar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
 import { CustomerLoginButton } from "@/components/CustomerLoginButton";
+import { CustomerPortalInviteButton } from "@/components/CustomerPortalInviteButton";
 import { useAuth } from "@/lib/auth";
 
 
@@ -40,6 +41,7 @@ function CustomerDetail() {
         <div className="flex items-center gap-3">
           <Link to="/customers/$id/statement" params={{ id: c.id }} className="h-9 px-3 rounded-md border border-slate-200 text-sm hover:bg-slate-50">Statement</Link>
           <StatusBadge status={c.status} />
+          {canManage && <CustomerPortalInviteButton customer={c} />}
           {canManage && <CustomerLoginButton customer={c} />}
           <EditDeleteBar
             table="customers" id={c.id} row={c} queryKey={["customer", id]}
