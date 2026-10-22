@@ -73,22 +73,29 @@ function PortalPage() {
       const loans = [...loanById.values()];
       const loanIds = loans.map((loan: any) => loan.id);
 
-      const [ms, dd] = await Promise.all([
+      const [ms, dd, progressResult] = await Promise.all([
         projectIds.length
           ? supabase.from("milestones").select("*").in("project_id", projectIds)
           : Promise.resolve({ data: [] as any[] }),
         loanIds.length
           ? supabase.from("drawdown_requests").select("*").in("loan_id", loanIds)
           : Promise.resolve({ data: [] as any[] }),
+        projectIds.length
+          ? (supabase as any).from("project_progress_updates").select("*")
+              .in("project_id", projectIds).eq("publication_status", "published")
+              .order("published_at", { ascending: false })
+          : Promise.resolve({ data: [] as any[], error: null }),
       ]);
       if ("error" in ms && ms.error) throw ms.error;
       if ("error" in dd && dd.error) throw dd.error;
+      if (progressResult.error) throw progressResult.error;
       return {
         customers: customers ?? [],
         projects,
         loans,
         milestones: ms.data ?? [],
         drawdowns: dd.data ?? [],
+        progressUpdates: progressResult.data ?? [],
       };
     },
   });
@@ -105,6 +112,7 @@ function PortalPage() {
   const milestones = data?.milestones ?? [];
   const loans = data?.loans ?? [];
   const drawdowns = data?.drawdowns ?? [];
+  const progressUpdates = data?.progressUpdates ?? [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -172,6 +180,32 @@ function PortalPage() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {progressUpdates.filter((update: any) => update.project_id === p.id).length > 0 && (
+                  <div className="border-t border-slate-100 pt-3 space-y-3">
+                    <div className="text-xs font-medium text-slate-500">Latest construction updates</div>
+                    {progressUpdates
+                      .filter((update: any) => update.project_id === p.id)
+                      .slice(0, 3)
+                      .map((update: any) => (
+                        <article key={update.id} className="rounded-lg bg-slate-50 p-3 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium text-sm text-slate-900">{update.stage}</div>
+                            <div className="text-xs text-slate-500">{formatDate(update.published_at)}</div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-slate-500">
+                            <span>{update.status.replaceAll("_", " ")}</span>
+                            <span className="font-semibold text-slate-900">{Number(update.progress_percent)}% complete</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                            <div className="h-full rounded-full bg-[#1E3A5F]" style={{ width: `${Math.min(100, Math.max(0, Number(update.progress_percent)))}%` }} />
+                          </div>
+                          {update.observations && <p className="text-sm text-slate-700 whitespace-pre-wrap">{update.observations}</p>}
+                          {update.next_steps && <p className="text-sm text-slate-600"><span className="font-medium">Next:</span> {update.next_steps}</p>}
+                        </article>
+                      ))}
                   </div>
                 )}
 
