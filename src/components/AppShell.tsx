@@ -2,12 +2,13 @@ import { ReactNode, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth, ROLE_LABELS, AppRole } from "@/lib/auth";
 import {
-  LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin,
+  LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin, Activity,
   HardHat, CreditCard, ShieldAlert, FileText, BarChart3, Settings, LogOut,
-  Bell, Menu, X, ChevronRight, Briefcase, Target,
+  Menu, X, ChevronRight, Briefcase, Target,
 } from "lucide-react";
 import logoUrl from "@/assets/logo.png";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 type NavItem = { to: string; label: string; icon: any; roles?: AppRole[] };
 const NAV: NavItem[] = [
@@ -15,6 +16,7 @@ const NAV: NavItem[] = [
   { to: "/performance", label: "Financial Performance", icon: BarChart3, roles: ["super_admin","executive","finance","finance_officer","risk_compliance_officer"] },
   { to: "/customers", label: "Customers", icon: Users, roles: ["super_admin","admin","executive","credit","operations","projects","credit_officer","operations_officer"] },
   { to: "/projects", label: "Projects", icon: Building2, roles: ["super_admin","admin","executive","finance","credit","operations","projects","credit_officer","operations_officer","finance_officer"] },
+  { to: "/progress", label: "Construction Progress", icon: Activity, roles: ["platform_admin","super_admin","admin","executive","operations","projects","site_monitoring_officer","operations_officer","credit_officer"] },
   { to: "/sales-leads", label: "Sales Leads", icon: Target, roles: ["super_admin","executive","sales","finance","projects","credit_officer","operations_officer","finance_officer"] },
   { to: "/appraisals", label: "Appraisals", icon: FileCheck2, roles: ["super_admin","executive","credit_officer","risk_compliance_officer"] },
   { to: "/loans", label: "Loans", icon: Banknote, roles: ["super_admin","executive","finance","credit_officer","finance_officer"] },
@@ -86,10 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-3">
             <InstallAppButton className="!h-9 !px-3 !text-xs" />
-            <button className="relative p-2 rounded-md hover:bg-slate-100" aria-label="Notifications">
-              <Bell className="h-5 w-5 text-slate-600" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-            </button>
+            {user?.id && <NotificationBell userId={user.id} />}
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200">
               <div className="h-8 w-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-sm font-medium">
                 {(user?.email ?? "U").slice(0,1).toUpperCase()}

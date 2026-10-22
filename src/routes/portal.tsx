@@ -6,6 +6,11 @@ import { formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import logoUrl from "@/assets/logo.png";
 import { LogOut } from "lucide-react";
+import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
+import { NotificationBell } from "@/components/NotificationBell";
+import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
+import { acceptCustomerPortalInvitation } from "@/lib/customer-portal.functions";
+import { ConstructionMilestones } from "@/components/ConstructionMilestones";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -24,30 +29,55 @@ function PortalPage() {
     enabled: !!user,
     queryKey: ["portal", user?.id],
     queryFn: async () => {
-      const { data: customers } = await supabase
+      if (hasRole("customer")) await acceptCustomerPortalInvitation({ data: {} });
+      const { data: customers, error: customerError } = await supabase
         .from("customers").select("*").eq("owner_user_id", user!.id);
+      if (customerError) throw customerError;
+
       const custIds = (customers ?? []).map((c: any) => c.id);
-      if (custIds.length === 0) return { customers: [], projects: [], milestones: [], loans: [], drawdowns: [] };
-      const [proj, loans] = await Promise.all([
-        supabase.from("projects").select("*").in("customer_id", custIds),
-        supabase.from("loan_facilities").select("*").in("customer_id", custIds),
-      ]);
-      const projIds = (proj.data ?? []).map((p: any) => p.id);
-      const loanIds = (loans.data ?? []).map((l: any) => l.id);
-      const [ms, dd] = await Promise.all([
-        projIds.length
-          ? supabase.from("milestones").select("*").in("project_id", projIds)
+      const { data: accessRows, error: accessError } = await (supabase as any)
+        .from("customer_project_access")
+        .select("project_id")
+        .eq("user_id", user!.id)
+        .is("revoked_at", null);
+      if (accessError) throw accessError;
+
+      const assignedProjectIds = [...new Set((accessRows ?? []).map((row: any) => row.project_id))] as string[];
+      const [ownedProjectsResult, assignedProjectsResult] = await Promise.all([
+        custIds.length
+          ? supabase.from("projects").select("*").in("customer_id", custIds)
           : Promise.resolve({ data: [] as any[] }),
-        loanIds.length
-          ? supabase.from("drawdown_requests").select("*").in("loan_id", loanIds)
+        assignedProjectIds.length
+          ? supabase.from("projects").select("*").in("id", assignedProjectIds)
           : Promise.resolve({ data: [] as any[] }),
       ]);
+      if ("error" in ownedProjectsResult && ownedProjectsResult.error) throw ownedProjectsResult.error;
+      if ("error" in assignedProjectsResult && assignedProjectsResult.error) throw assignedProjectsResult.error;
+
+      const projectById = new Map<string, any>();
+      for (const project of [...(ownedProjectsResult.data ?? []), ...(assignedProjectsResult.data ?? [])] as any[]) {
+        projectById.set(project.id, project);
+      }
+      const projects = [...projectById.values()];
+      const projectIds = projects.map((project: any) => project.id);
+
+      const [ms, progressResult] = await Promise.all([
+        projectIds.length
+          ? supabase.from("milestones").select("*").in("project_id", projectIds)
+          : Promise.resolve({ data: [] as any[] }),
+        projectIds.length
+          ? (supabase as any).from("project_progress_updates").select("*")
+              .in("project_id", projectIds).eq("publication_status", "published")
+              .order("published_at", { ascending: false })
+          : Promise.resolve({ data: [] as any[], error: null }),
+      ]);
+      if ("error" in ms && ms.error) throw ms.error;
+      if (progressResult.error) throw progressResult.error;
       return {
         customers: customers ?? [],
-        projects: proj.data ?? [],
-        loans: loans.data ?? [],
+        projects,
         milestones: ms.data ?? [],
-        drawdowns: dd.data ?? [],
+        progressUpdates: progressResult.data ?? [],
       };
     },
   });
@@ -62,8 +92,7 @@ function PortalPage() {
 
   const projects = data?.projects ?? [];
   const milestones = data?.milestones ?? [];
-  const loans = data?.loans ?? [];
-  const drawdowns = data?.drawdowns ?? [];
+   const progressUpdates = data?.progressUpdates ?? [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -76,9 +105,12 @@ function PortalPage() {
               <div className="text-xs text-white/70">{user.email}</div>
             </div>
           </div>
-          <button onClick={signOut} className="flex items-center gap-2 text-sm text-white/80 hover:text-white">
-            <LogOut className="h-4 w-4" />Sign out
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell userId={user.id} />
+            <button onClick={signOut} className="flex items-center gap-2 text-sm text-white/80 hover:text-white">
+              <LogOut className="h-4 w-4" />Sign out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -96,10 +128,7 @@ function PortalPage() {
             const pct = ms.length
               ? Math.round(ms.reduce((s: number, m: any) => s + (Number(m.target_pct) || 0), 0) / ms.length)
               : 0;
-            const projLoans = loans.filter((l: any) => l.customer_id === p.customer_id);
-            const drawn = drawdowns
-              .filter((d: any) => projLoans.some((l: any) => l.id === d.loan_id) && d.status === "active")
-              .reduce((s: number, d: any) => s + (Number(d.requested_amount) || 0), 0);
+            const ownsCustomerRecord = (data?.customers ?? []).some((customer: any) => customer.id === p.customer_id);
             return (
               <section key={p.id} className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
                 <div className="flex items-start justify-between gap-4">
@@ -122,7 +151,7 @@ function PortalPage() {
 
                 {ms.length > 0 && (
                   <div className="border-t border-slate-100 pt-3">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Milestones</div>
+                    <div className="text-xs font-medium text-slate-500 mb-2">Financing milestones</div>
                     <ul className="space-y-1 text-sm">
                       {ms.map((m: any) => (
                         <li key={m.id} className="flex justify-between">
@@ -134,20 +163,39 @@ function PortalPage() {
                   </div>
                 )}
 
-                {projLoans.length > 0 && (
-                  <div className="border-t border-slate-100 pt-3">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Financing</div>
-                    {projLoans.map((l: any) => (
-                      <div key={l.id} className="text-sm flex justify-between py-1">
-                        <span className="text-slate-700">Facility · {l.status}</span>
-                        <span className="text-slate-500">
-                          KES {(Number(l.approved_amount ?? l.requested_amount) || 0).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                    <div className="text-xs text-slate-500 mt-1">Total drawn: KES {drawn.toLocaleString()}</div>
+                {progressUpdates.filter((update: any) => update.project_id === p.id).length > 0 && (
+                  <div className="border-t border-slate-100 pt-3 space-y-3">
+                    <div className="text-xs font-medium text-slate-500">Latest construction updates</div>
+                    {progressUpdates
+                      .filter((update: any) => update.project_id === p.id)
+                      .slice(0, 3)
+                      .map((update: any) => (
+                        <article key={update.id} className="rounded-lg bg-slate-50 p-3 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-medium text-sm text-slate-900">{update.stage}</div>
+                            <div className="text-xs text-slate-500">{formatDate(update.published_at)}</div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-slate-500">
+                            <span>{update.status.replaceAll("_", " ")}</span>
+                            <span className="font-semibold text-slate-900">{Number(update.progress_percent)}% complete</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                            <div className="h-full rounded-full bg-[#1E3A5F]" style={{ width: `${Math.min(100, Math.max(0, Number(update.progress_percent)))}%` }} />
+                          </div>
+                          {update.observations && <p className="text-sm text-slate-700 whitespace-pre-wrap">{update.observations}</p>}
+                          {update.next_steps && <p className="text-sm text-slate-600"><span className="font-medium">Next:</span> {update.next_steps}</p>}
+                          <ProgressPhotoGallery
+                            projectId={p.id}
+                            updateId={update.id}
+                            tenantId={update.tenant_id}
+                          />
+                        </article>
+                      ))}
                   </div>
                 )}
+
+                <ConstructionMilestones projectId={p.id} />
+                {ownsCustomerRecord && <ProjectFinancialSummary projectId={p.id} />}
               </section>
             );
           })

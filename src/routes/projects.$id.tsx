@@ -9,6 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatKES, formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { ProjectCustomerAccess } from "@/components/ProjectCustomerAccess";
+import { ProjectProgressUpdates } from "@/components/ProjectProgressUpdates";
+import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
+import { ConstructionMilestones } from "@/components/ConstructionMilestones";
 
 const DOC_TYPES = [
   "Architectural Drawings", "Structural Drawings", "Bill of Quantities",
@@ -28,6 +32,10 @@ function ProjectDetail() {
   const [docType, setDocType] = useState(DOC_TYPES[0]);
   const [uploading, setUploading] = useState(false);
   const canEdit = hasRole("executive", "super_admin");
+  const canManageCustomerAccess = hasRole("platform_admin", "super_admin", "admin", "operations", "operations_officer", "credit", "credit_officer");
+  const canManageProgress = hasRole("platform_admin", "super_admin", "admin", "executive", "operations", "projects", "site_monitoring_officer", "operations_officer", "credit_officer");
+  const canViewFinancials = hasRole("super_admin", "platform_admin", "admin", "executive", "finance", "finance_officer", "risk_compliance_officer");
+  const canRecordFinancials = hasRole("super_admin", "platform_admin", "admin", "executive", "finance", "finance_officer");
 
   const { data, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -141,7 +149,7 @@ function ProjectDetail() {
           ))}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h3 className="font-semibold text-slate-900 mb-3">Milestones</h3>
+          <h3 className="font-semibold text-slate-900 mb-3">Financing milestones</h3>
           {data.milestones.length === 0 ? <p className="text-sm text-slate-500">No milestones defined.</p> :
             data.milestones.map((m: any) => (
               <div key={m.id} className="py-2 border-b border-slate-100 last:border-0">
@@ -180,6 +188,10 @@ function ProjectDetail() {
             ))}
         </div>
       </div>
+      {canManageProgress && <div className="mt-4"><ProjectProgressUpdates projectId={p.id} /></div>}
+      {canManageProgress && <div className="mt-4"><ConstructionMilestones projectId={p.id} editable /></div>}
+      {canManageCustomerAccess && <div className="mt-4"><ProjectCustomerAccess projectId={p.id} /></div>}
+      {canViewFinancials && <div className="mt-4"><ProjectFinancialSummary projectId={p.id} canRecordContribution={canRecordFinancials} /></div>}
     </>
   );
 }
