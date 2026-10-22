@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import logoUrl from "@/assets/logo.png";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 type NavItem = { to: string; label: string; icon: any; roles?: AppRole[] };
 const NAV: NavItem[] = [
@@ -86,10 +87,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-3">
             <InstallAppButton className="!h-9 !px-3 !text-xs" />
-            <button className="relative p-2 rounded-md hover:bg-slate-100" aria-label="Notifications">
-              <Bell className="h-5 w-5 text-slate-600" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-            </button>
+            {user?.id && <NotificationBell userId={user.id} />}
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200">
               <div className="h-8 w-8 rounded-full bg-[#1E3A5F] text-white flex items-center justify-center text-sm font-medium">
                 {(user?.email ?? "U").slice(0,1).toUpperCase()}
