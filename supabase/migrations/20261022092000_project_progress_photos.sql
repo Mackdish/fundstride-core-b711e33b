@@ -73,7 +73,7 @@ CREATE POLICY "Staff read progress photos"
   FOR SELECT TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), tenant_id)
   );
 
 DROP POLICY IF EXISTS "Customers read published progress photos" ON public.project_progress_photos;
@@ -121,7 +121,7 @@ CREATE POLICY "Staff upload progress photos"
         AND u.id::text = split_part(storage.objects.name, '/', 3)
         AND u.tenant_id = public.current_tenant_id()
         AND p.tenant_id = public.current_tenant_id()
-        AND public.is_staff(auth.uid())
+        AND public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
     )
   );
 
