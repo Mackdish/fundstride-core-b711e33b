@@ -196,7 +196,62 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
       throw new Error("Progress update was not published because its audit record could not be saved. Please retry.");
     }
 
-    return { ok: true, update: saved };
+    let notificationWarning: string | null = null;
+    if (publish) {
+      try {
+        const { data: projectRecord, error: projectLookupError } = await admin.from("projects")
+          .select("id,customer_id,name").eq("id", data.project_id).eq("tenant_id", tenantId).maybeSingle();
+        if (projectLookupError || !projectRecord) throw new Error("Unable to load project recipients");
+
+        const [{ data: customerRecord, error: customerLookupError }, { data: grants, error: grantsError }] =
+          await Promise.all([
+            admin.from("customers").select("owner_user_id").eq("id", projectRecord.customer_id).maybeSingle(),
+            (admin as any).from("customer_project_access")
+              .select("user_id")
+              .eq("project_id", data.project_id)
+              .eq("tenant_id", tenantId)
+              .is("revoked_at", null),
+          ]);
+        if (customerLookupError || grantsError) throw new Error("Unable to load customer recipients");
+
+        const recipientIds = [...new Set([
+          customerRecord?.owner_user_id,
+          ...(grants ?? []).map((grant: any) => grant.user_id),
+        ].filter((id): id is string => typeof id === "string" && id !== context.userId))];
+        if (recipientIds.length) {
+          const [{ data: activeProfiles, error: profileLookupError }, { data: customerRoles, error: roleLookupError }] =
+            await Promise.all([
+              admin.from("profiles").select("id").in("id", recipientIds)
+                .eq("tenant_id", tenantId).eq("status", "active"),
+              admin.from("user_roles").select("user_id").in("user_id", recipientIds)
+                .eq("tenant_id", tenantId).eq("role", "customer"),
+            ]);
+          if (profileLookupError || roleLookupError) throw new Error("Unable to verify customer recipients");
+          const activeIds = new Set((activeProfiles ?? []).map((profile: any) => profile.id));
+          const customerIds = [...new Set((customerRoles ?? [])
+            .map((role: any) => role.user_id)
+            .filter((id: string) => activeIds.has(id)))];
+          if (customerIds.length) {
+            const { error: notificationError } = await (admin as any).from("in_app_notifications")
+              .insert(customerIds.map((userId: string) => ({
+                tenant_id: tenantId,
+                user_id: userId,
+                project_id: data.project_id,
+                progress_update_id: saved.id,
+                notification_type: "project_progress_published",
+                title: "Project progress updated",
+                message: `${saved.stage}: ${Number(saved.progress_percent)}% complete for ${projectRecord.name}.`,
+              })));
+            if (notificationError) throw new Error("Unable to create in-app notifications");
+          }
+        }
+      } catch (notificationError) {
+        console.error("[Progress] Published update but notification creation failed", notificationError);
+        notificationWarning = "Progress was published, but one or more customer notifications could not be created.";
+      }
+    }
+
+    return { ok: true, update: saved, notificationWarning };
   });
 
 
