@@ -10,6 +10,7 @@ import { formatKES, formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { ProjectCustomerAccess } from "@/components/ProjectCustomerAccess";
+import { ProjectProgressUpdates } from "@/components/ProjectProgressUpdates";
 
 const DOC_TYPES = [
   "Architectural Drawings", "Structural Drawings", "Bill of Quantities",
@@ -30,6 +31,7 @@ function ProjectDetail() {
   const [uploading, setUploading] = useState(false);
   const canEdit = hasRole("executive", "super_admin");
   const canManageCustomerAccess = hasRole("super_admin", "admin", "operations", "operations_officer", "credit", "credit_officer");
+  const canManageProgress = hasRole("super_admin", "admin", "executive", "operations", "projects", "site_monitoring_officer", "operations_officer", "credit_officer");
 
   const { data, isLoading } = useQuery({
     queryKey: ["project", id],
@@ -182,6 +184,7 @@ function ProjectDetail() {
             ))}
         </div>
       </div>
+      {canManageProgress && <div className="mt-4"><ProjectProgressUpdates projectId={p.id} /></div>}
       {canManageCustomerAccess && <div className="mt-4"><ProjectCustomerAccess projectId={p.id} /></div>}
     </>
   );
