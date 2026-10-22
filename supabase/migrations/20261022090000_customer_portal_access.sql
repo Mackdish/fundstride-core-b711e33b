@@ -186,3 +186,41 @@ CREATE POLICY "Customers view assigned projects"
         AND access.revoked_at IS NULL
     )
   );
+
+
+-- Tighten the legacy project policies so customer accounts are read-only and
+-- lose owner-based project access when their customer role is removed.
+DROP POLICY IF EXISTS "View projects" ON public.projects;
+CREATE POLICY "View projects"
+  ON public.projects
+  FOR SELECT TO authenticated
+  USING (
+    (
+      public.is_staff(auth.uid())
+      AND tenant_id = public.current_tenant_id()
+    )
+    OR (
+      public.has_role(auth.uid(), 'customer'::public.app_role)
+      AND tenant_id = public.current_tenant_id()
+      AND EXISTS (
+        SELECT 1
+        FROM public.customers c
+        WHERE c.id = projects.customer_id
+          AND c.owner_user_id = auth.uid()
+          AND c.tenant_id = public.current_tenant_id()
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS "Manage projects" ON public.projects;
+CREATE POLICY "Manage projects"
+  ON public.projects
+  FOR ALL TO authenticated
+  USING (
+    public.is_staff(auth.uid())
+    AND tenant_id = public.current_tenant_id()
+  )
+  WITH CHECK (
+    public.is_staff(auth.uid())
+    AND tenant_id = public.current_tenant_id()
+  );
