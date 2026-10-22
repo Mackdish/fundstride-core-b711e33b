@@ -53,6 +53,16 @@ BEGIN
     RAISE EXCEPTION 'Customer account must be active and belong to the project tenant';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.user_roles r
+    WHERE r.user_id = NEW.user_id
+      AND r.tenant_id = project_tenant
+      AND r.role = 'customer'
+  ) OR public.is_staff(NEW.user_id) THEN
+    RAISE EXCEPTION 'Only customer accounts can be assigned customer project access';
+  END IF;
+
   NEW.tenant_id := project_tenant;
   RETURN NEW;
 END;
