@@ -102,6 +102,12 @@ CREATE POLICY "Customers view their project access"
     user_id = auth.uid()
     AND revoked_at IS NULL
     AND tenant_id = public.current_tenant_id()
+    AND EXISTS (
+      SELECT 1 FROM public.user_roles customer_role
+      WHERE customer_role.user_id = auth.uid()
+        AND customer_role.tenant_id = public.current_tenant_id()
+        AND customer_role.role = 'customer'
+    )
   );
 
 -- Invitation records support staff-managed invitations and account linking.
