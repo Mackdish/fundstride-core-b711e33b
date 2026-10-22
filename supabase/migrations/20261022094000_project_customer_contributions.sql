@@ -66,7 +66,7 @@ CREATE POLICY "Staff read project contributions"
   FOR SELECT TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.is_tenant_staff(auth.uid(), tenant_id)
   );
 
 DROP POLICY IF EXISTS "Customers read confirmed own project contributions" ON public.project_customer_contributions;
