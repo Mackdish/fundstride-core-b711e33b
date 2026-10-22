@@ -254,3 +254,47 @@ export const revokeCustomerProjectAccess = createServerFn({ method: "POST" })
     if (error) throw new Error("Unable to revoke project access");
     return { ok: true };
   });
+
+
+export const getProjectCustomerAccess = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ project_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { admin, tenantId } = await assertStaffAndGetTenant(context.userId);
+    const { data: project, error: projectError } = await admin
+      .from("projects").select("id,tenant_id").eq("id", data.project_id).maybeSingle();
+    if (projectError || !project || project.tenant_id !== tenantId) {
+      throw new Error("Project not found in your company");
+    }
+
+    const { data: customerRoles, error: rolesError } = await admin
+      .from("user_roles").select("user_id").eq("tenant_id", tenantId).eq("role", "customer");
+    if (rolesError) throw new Error("Unable to load customer accounts");
+    const candidateIds = [...new Set((customerRoles ?? []).map((row: any) => row.user_id))] as string[];
+
+    const [profilesResult, accessResult] = await Promise.all([
+      candidateIds.length
+        ? admin.from("profiles").select("id,email,full_name,status").eq("tenant_id", tenantId).in("id", candidateIds)
+        : Promise.resolve({ data: [] as any[], error: null }),
+      (admin as any).from("customer_project_access")
+        .select("id,project_id,user_id,granted_by,created_at,revoked_at")
+        .eq("project_id", data.project_id)
+        .eq("tenant_id", tenantId)
+        .is("revoked_at", null),
+    ]);
+    if (profilesResult.error) throw new Error("Unable to load customer profiles");
+    if (accessResult.error) throw new Error("Unable to load project access assignments");
+
+    const profiles = profilesResult.data ?? [];
+    const profileById = new Map(profiles.map((profile: any) => [profile.id, profile]));
+    const access = (accessResult.data ?? []).map((grant: any) => ({
+      ...grant,
+      profile: profileById.get(grant.user_id) ?? null,
+    }));
+    const assignedIds = new Set(access.map((grant: any) => grant.user_id));
+    const candidates = profiles
+      .filter((profile: any) => profile.status === "active")
+      .map((profile: any) => ({ ...profile, alreadyAssigned: assignedIds.has(profile.id) }));
+
+    return { candidates, access };
+  });
