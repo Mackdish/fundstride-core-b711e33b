@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ProjectCustomerAccess } from "@/components/ProjectCustomerAccess";
 import { ProjectProgressUpdates } from "@/components/ProjectProgressUpdates";
 import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
+import { ConstructionMilestones } from "@/components/ConstructionMilestones";
 
 const DOC_TYPES = [
   "Architectural Drawings", "Structural Drawings", "Bill of Quantities",
@@ -148,7 +149,7 @@ function ProjectDetail() {
           ))}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h3 className="font-semibold text-slate-900 mb-3">Milestones</h3>
+          <h3 className="font-semibold text-slate-900 mb-3">Financing milestones</h3>
           {data.milestones.length === 0 ? <p className="text-sm text-slate-500">No milestones defined.</p> :
             data.milestones.map((m: any) => (
               <div key={m.id} className="py-2 border-b border-slate-100 last:border-0">
@@ -188,6 +189,7 @@ function ProjectDetail() {
         </div>
       </div>
       {canManageProgress && <div className="mt-4"><ProjectProgressUpdates projectId={p.id} /></div>}
+      {canManageProgress && <div className="mt-4"><ConstructionMilestones projectId={p.id} editable /></div>}
       {canManageCustomerAccess && <div className="mt-4"><ProjectCustomerAccess projectId={p.id} /></div>}
       {canViewFinancials && <div className="mt-4"><ProjectFinancialSummary projectId={p.id} canRecordContribution={canRecordFinancials} /></div>}
     </>
