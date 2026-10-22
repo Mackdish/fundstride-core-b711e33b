@@ -9,7 +9,7 @@ async function getAdmin() {
 }
 
 const STAFF_ROLES = new Set([
-  "platform_admin", "super_admin, "admin", "executive", "finance", "credit", "operations",
+  "platform_admin", "super_admin", "admin", "executive", "finance", "credit", "operations",
   "sales", "projects", "credit_officer", "operations_officer",
   "site_monitoring_officer", "finance_officer", "risk_compliance_officer",
 ]);
