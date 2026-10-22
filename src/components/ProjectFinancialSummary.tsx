@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Wallet, Plus, ChevronDown } from "lucide-react";
@@ -213,7 +213,7 @@ export function ProjectFinancialSummary({
   );
 }
 
-function FinancialSection({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+function FinancialSection({ title, count, children }: { title: string; count: number; children: ReactNode }) {
   return (
     <details className="rounded-lg border border-slate-200" open={count > 0}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-3 text-sm font-medium text-slate-800">
