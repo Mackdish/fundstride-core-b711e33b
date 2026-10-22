@@ -74,13 +74,43 @@ CREATE TRIGGER project_progress_updates_set_tenant
 REVOKE EXECUTE ON FUNCTION public.set_project_progress_tenant()
   FROM PUBLIC, anon, authenticated;
 
+
+-- Explicit role helper keeps progress access consistent with the app's role aliases.
+CREATE OR REPLACE FUNCTION public.can_manage_project_progress(_user_id uuid, _tenant_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    JOIN public.user_roles r ON r.user_id = p.id
+    WHERE p.id = _user_id
+      AND p.tenant_id = _tenant_id
+      AND p.status = 'active'
+      AND r.tenant_id = _tenant_id
+      AND r.role IN (
+        'super_admin', 'platform_admin', 'admin', 'executive',
+        'operations', 'projects', 'site_monitoring_officer',
+        'operations_officer', 'credit_officer'
+      )
+  )
+$;
+
+REVOKE EXECUTE ON FUNCTION public.can_manage_project_progress(uuid, uuid)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_manage_project_progress(uuid, uuid)
+  TO authenticated;
+
 DROP POLICY IF EXISTS "Staff read project progress" ON public.project_progress_updates;
 CREATE POLICY "Staff read project progress"
   ON public.project_progress_updates
   FOR SELECT TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), tenant_id)
   );
 
 DROP POLICY IF EXISTS "Customers read published project progress" ON public.project_progress_updates;
@@ -135,7 +165,7 @@ CREATE POLICY "Staff read project progress history"
   FOR SELECT TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), tenant_id)
   );
 
 -- Deliberately no INSERT/UPDATE/DELETE policies for authenticated clients:
