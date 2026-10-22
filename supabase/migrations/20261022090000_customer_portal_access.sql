@@ -146,3 +146,21 @@ CREATE POLICY "Staff manage customer portal invitations"
   );
 
 -- Do not allow clients to invoke the trigger helper directly.
+
+-- A specifically assigned customer can read only the project records explicitly
+-- granted to them. Existing owner-based policies continue to work unchanged.
+DROP POLICY IF EXISTS "Customers view assigned projects" ON public.projects;
+CREATE POLICY "Customers view assigned projects"
+  ON public.projects
+  FOR SELECT TO authenticated
+  USING (
+    tenant_id = public.current_tenant_id()
+    AND EXISTS (
+      SELECT 1
+      FROM public.customer_project_access access
+      WHERE access.project_id = projects.id
+        AND access.user_id = auth.uid()
+        AND access.tenant_id = public.current_tenant_id()
+        AND access.revoked_at IS NULL
+    )
+  );
