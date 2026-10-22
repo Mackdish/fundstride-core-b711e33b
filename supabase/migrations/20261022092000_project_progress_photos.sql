@@ -142,7 +142,7 @@ CREATE POLICY "Read authorized progress photos"
         AND u.tenant_id = public.current_tenant_id()
         AND p.tenant_id = public.current_tenant_id()
         AND (
-          public.is_staff(auth.uid())
+          public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
           OR (
             u.publication_status = 'published'
             AND (
@@ -168,12 +168,12 @@ CREATE POLICY "Staff update progress photos"
   USING (
     bucket_id = 'progress-photos'
     AND split_part(name, '/', 1) = public.current_tenant_id()::text
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
   )
   WITH CHECK (
     bucket_id = 'progress-photos'
     AND split_part(name, '/', 1) = public.current_tenant_id()::text
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
   );
 
 DROP POLICY IF EXISTS "Staff delete progress photos" ON storage.objects;
@@ -183,5 +183,5 @@ CREATE POLICY "Staff delete progress photos"
   USING (
     bucket_id = 'progress-photos'
     AND split_part(name, '/', 1) = public.current_tenant_id()::text
-    AND public.is_staff(auth.uid())
+    AND public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
   );
