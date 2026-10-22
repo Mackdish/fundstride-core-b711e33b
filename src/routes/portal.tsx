@@ -24,28 +24,69 @@ function PortalPage() {
     enabled: !!user,
     queryKey: ["portal", user?.id],
     queryFn: async () => {
-      const { data: customers } = await supabase
+      const { data: customers, error: customerError } = await supabase
         .from("customers").select("*").eq("owner_user_id", user!.id);
+      if (customerError) throw customerError;
+
       const custIds = (customers ?? []).map((c: any) => c.id);
-      if (custIds.length === 0) return { customers: [], projects: [], milestones: [], loans: [], drawdowns: [] };
-      const [proj, loans] = await Promise.all([
-        supabase.from("projects").select("*").in("customer_id", custIds),
-        supabase.from("loan_facilities").select("*").in("customer_id", custIds),
+      const { data: accessRows, error: accessError } = await (supabase as any)
+        .from("customer_project_access")
+        .select("project_id")
+        .eq("user_id", user!.id)
+        .is("revoked_at", null);
+      if (accessError) throw accessError;
+
+      const assignedProjectIds = [...new Set((accessRows ?? []).map((row: any) => row.project_id))] as string[];
+      const [ownedProjectsResult, assignedProjectsResult] = await Promise.all([
+        custIds.length
+          ? supabase.from("projects").select("*").in("customer_id", custIds)
+          : Promise.resolve({ data: [] as any[] }),
+        assignedProjectIds.length
+          ? supabase.from("projects").select("*").in("id", assignedProjectIds)
+          : Promise.resolve({ data: [] as any[] }),
       ]);
-      const projIds = (proj.data ?? []).map((p: any) => p.id);
-      const loanIds = (loans.data ?? []).map((l: any) => l.id);
+      if ("error" in ownedProjectsResult && ownedProjectsResult.error) throw ownedProjectsResult.error;
+      if ("error" in assignedProjectsResult && assignedProjectsResult.error) throw assignedProjectsResult.error;
+
+      const projectById = new Map<string, any>();
+      for (const project of [...(ownedProjectsResult.data ?? []), ...(assignedProjectsResult.data ?? [])] as any[]) {
+        projectById.set(project.id, project);
+      }
+      const projects = [...projectById.values()];
+      const projectIds = projects.map((project: any) => project.id);
+
+      const [customerLoansResult, projectLoansResult] = await Promise.all([
+        custIds.length
+          ? supabase.from("loan_facilities").select("*").in("customer_id", custIds)
+          : Promise.resolve({ data: [] as any[] }),
+        projectIds.length
+          ? supabase.from("loan_facilities").select("*").in("project_id", projectIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+      if ("error" in customerLoansResult && customerLoansResult.error) throw customerLoansResult.error;
+      if ("error" in projectLoansResult && projectLoansResult.error) throw projectLoansResult.error;
+
+      const loanById = new Map<string, any>();
+      for (const loan of [...(customerLoansResult.data ?? []), ...(projectLoansResult.data ?? [])] as any[]) {
+        loanById.set(loan.id, loan);
+      }
+      const loans = [...loanById.values()];
+      const loanIds = loans.map((loan: any) => loan.id);
+
       const [ms, dd] = await Promise.all([
-        projIds.length
-          ? supabase.from("milestones").select("*").in("project_id", projIds)
+        projectIds.length
+          ? supabase.from("milestones").select("*").in("project_id", projectIds)
           : Promise.resolve({ data: [] as any[] }),
         loanIds.length
           ? supabase.from("drawdown_requests").select("*").in("loan_id", loanIds)
           : Promise.resolve({ data: [] as any[] }),
       ]);
+      if ("error" in ms && ms.error) throw ms.error;
+      if ("error" in dd && dd.error) throw dd.error;
       return {
         customers: customers ?? [],
-        projects: proj.data ?? [],
-        loans: loans.data ?? [],
+        projects,
+        loans,
         milestones: ms.data ?? [],
         drawdowns: dd.data ?? [],
       };
