@@ -32,7 +32,7 @@ function ProjectDetail() {
   const [docType, setDocType] = useState(DOC_TYPES[0]);
   const [uploading, setUploading] = useState(false);
   const canEdit = hasRole("executive", "super_admin");
-  const canManageCustomerAccess = hasRole("super_admin", "admin", "operations", "operations_officer", "credit", "credit_officer");
+  const canManageCustomerAccess = hasRole("platform_admin", "super_admin", "admin", "operations", "operations_officer", "credit", "credit_officer");
   const canManageProgress = hasRole("super_admin", "admin", "executive", "operations", "projects", "site_monitoring_officer", "operations_officer", "credit_officer");
   const canViewFinancials = hasRole("super_admin", "platform_admin", "admin", "executive", "finance", "finance_officer", "risk_compliance_officer");
   const canRecordFinancials = hasRole("super_admin", "platform_admin", "admin", "executive", "finance", "finance_officer");
