@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FilePlus2, PencilLine, Send } from "lucide-react";
+import { FilePlus2, PencilLine, Send, History } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { getProjectProgressUpdates, saveProjectProgressUpdate } from "@/lib/project-progress.functions";
 import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
@@ -64,6 +64,7 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
   });
 
   const updates = data?.updates ?? [];
+  const history = data?.history ?? [];
 
   function editDraft(update: any) {
     setForm({
@@ -266,6 +267,40 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
           ))}
         </div>
       )}
+
+      <details className="rounded-lg border border-slate-200">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-3 text-sm font-medium text-slate-800">
+          <span className="inline-flex items-center gap-2"><History className="h-4 w-4" /> Activity history <span className="font-normal text-slate-400">({history.length})</span></span>
+          <span className="text-xs font-normal text-slate-500">Audit trail</span>
+        </summary>
+        <div className="border-t border-slate-100 px-3">
+          {history.length === 0 ? (
+            <p className="py-3 text-sm text-slate-500">No activity recorded yet.</p>
+          ) : (
+            <ol className="divide-y divide-slate-100">
+              {history.map((item: any) => (
+                <li key={item.id} className="py-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1">
+                    <div>
+                      <p className="text-sm font-medium text-slate-800 capitalize">{String(item.action).replaceAll("_", " ")} progress update</p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {item.actor?.full_name || item.actor?.email || "System or unavailable user"}
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-400">{formatDate(item.created_at)}</p>
+                  </div>
+                  {item.new_value && (
+                    <p className="mt-1 text-xs text-slate-600">
+                      {item.new_value.stage} · {Number(item.new_value.progress_percent)}% · {item.new_value.publication_status}
+                      {item.old_value ? ` (previously ${Number(item.old_value.progress_percent)}%)` : ""}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </details>
     </section>
   );
 }
