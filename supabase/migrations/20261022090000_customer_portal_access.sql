@@ -118,7 +118,7 @@ CREATE POLICY "Staff manage customer project access"
   )
   WITH CHECK (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.is_tenant_staff(auth.uid(), tenant_id)
   );
 
 DROP POLICY IF EXISTS "Customers view their project access"
@@ -176,11 +176,11 @@ CREATE POLICY "Staff manage customer portal invitations"
   FOR ALL TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.is_tenant_staff(auth.uid(), tenant_id)
   )
   WITH CHECK (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.is_tenant_staff(auth.uid(), tenant_id)
     AND EXISTS (
       SELECT 1
       FROM public.customers c
@@ -192,7 +192,7 @@ CREATE POLICY "Staff manage customer portal invitations"
 -- Do not allow clients to invoke the trigger helper directly.
 
 -- A specifically assigned customer can read only the project records explicitly
--- granted to them. Existing owner-based policies continue to work unchanged.
+-- granted to them. Legacy owner-based project access is tightened below.
 DROP POLICY IF EXISTS "Customers view assigned projects" ON public.projects;
 CREATE POLICY "Customers view assigned projects"
   ON public.projects
@@ -224,7 +224,7 @@ CREATE POLICY "View projects"
   FOR SELECT TO authenticated
   USING (
     (
-      public.is_staff(auth.uid())
+      public.is_tenant_staff(auth.uid(), tenant_id)
       AND tenant_id = public.current_tenant_id()
     )
     OR (
@@ -245,10 +245,10 @@ CREATE POLICY "Manage projects"
   ON public.projects
   FOR ALL TO authenticated
   USING (
-    public.is_staff(auth.uid())
+    public.is_tenant_staff(auth.uid(), tenant_id)
     AND tenant_id = public.current_tenant_id()
   )
   WITH CHECK (
-    public.is_staff(auth.uid())
+    public.is_tenant_staff(auth.uid(), tenant_id)
     AND tenant_id = public.current_tenant_id()
   );
