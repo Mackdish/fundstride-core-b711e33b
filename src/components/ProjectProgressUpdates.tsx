@@ -49,8 +49,12 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
         action,
       },
     }),
-    onSuccess: async (_result, action) => {
-      toast.success(action === "publish" ? "Progress update published" : "Draft saved");
+    onSuccess: async (result, action) => {
+      if (action === "publish" && result.notificationWarning) {
+        toast.warning(result.notificationWarning);
+      } else {
+        toast.success(action === "publish" ? "Progress update published" : "Draft saved");
+      }
       setForm(emptyForm);
       setFormOpen(false);
       await queryClient.invalidateQueries({ queryKey });
