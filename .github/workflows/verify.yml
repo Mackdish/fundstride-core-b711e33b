@@ -30,6 +30,10 @@ jobs:
       - name: Production build
         run: bun run build
 
+      - name: TypeScript type check
+        run: bunx tsc --noEmit
+        continue-on-error: true
+
       # The existing repository baseline currently has thousands of repository-wide
       # Prettier/ESLint violations. Keep lint visible while the baseline is cleaned up.
       - name: Lint (baseline currently has existing failures)
