@@ -198,3 +198,71 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
 
     return { ok: true, update: saved };
   });
+
+
+export const attachProgressPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({
+    project_id: z.string().uuid(),
+    update_id: z.string().uuid(),
+    storage_path: z.string().min(1).max(500),
+    caption: z.string().max(500).default(""),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { admin, tenantId } = await assertProgressStaff(context.userId);
+    const { data: update, error: updateError } = await (admin as any)
+      .from("project_progress_updates")
+      .select("id,project_id,tenant_id")
+      .eq("id", data.update_id)
+      .eq("project_id", data.project_id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (updateError || !update) throw new Error("Progress update not found in your company");
+
+    const prefix = `${tenantId}/${data.project_id}/${data.update_id}/`;
+    const filename = data.storage_path.startsWith(prefix) ? data.storage_path.slice(prefix.length) : "";
+    if (!/^[0-9a-f-]{36}\.(jpg|png|webp)$/i.test(filename)) {
+      throw new Error("Invalid photo path. Upload the photo again from this project.");
+    }
+
+    const { data: objects, error: storageError } = await admin.storage
+      .from("progress-photos")
+      .list(`${tenantId}/${data.project_id}/${data.update_id}`, { search: filename, limit: 100 });
+    if (storageError || !(objects ?? []).some((object: any) => object.name === filename)) {
+      throw new Error("Uploaded photo could not be verified in private storage");
+    }
+
+    const { data: photo, error } = await (admin as any).from("project_progress_photos")
+      .insert({
+        progress_update_id: data.update_id,
+        project_id: data.project_id,
+        tenant_id: tenantId,
+        storage_path: data.storage_path,
+        caption: data.caption.trim(),
+        uploaded_by: context.userId,
+      })
+      .select("*")
+      .single();
+    if (error || !photo) throw new Error("Unable to attach the uploaded photo to this progress update");
+    return { ok: true, photo };
+  });
+
+export const deleteProgressPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ photo_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { admin, tenantId } = await assertProgressStaff(context.userId);
+    const { data: photo, error: photoError } = await (admin as any).from("project_progress_photos")
+      .select("id,tenant_id,storage_path")
+      .eq("id", data.photo_id)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (photoError || !photo) throw new Error("Photo not found in your company");
+
+    const { error: storageError } = await admin.storage.from("progress-photos").remove([photo.storage_path]);
+    if (storageError) throw new Error("Unable to remove the photo from private storage");
+    const { error } = await (admin as any).from("project_progress_photos")
+      .delete().eq("id", photo.id).eq("tenant_id", tenantId);
+    if (error) throw new Error("Photo file was removed, but its record could not be deleted. Contact an administrator.");
+    return { ok: true };
+  });
