@@ -9,6 +9,7 @@ import { LogOut } from "lucide-react";
 import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
+import { acceptCustomerPortalInvitation } from "@/lib/customer-portal.functions";
 import { ConstructionMilestones } from "@/components/ConstructionMilestones";
 
 export const Route = createFileRoute("/portal")({
@@ -28,6 +29,7 @@ function PortalPage() {
     enabled: !!user,
     queryKey: ["portal", user?.id],
     queryFn: async () => {
+      if (hasRole("customer")) await acceptCustomerPortalInvitation({ data: {} });
       const { data: customers, error: customerError } = await supabase
         .from("customers").select("*").eq("owner_user_id", user!.id);
       if (customerError) throw customerError;
