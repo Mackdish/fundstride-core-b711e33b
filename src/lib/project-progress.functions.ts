@@ -80,9 +80,9 @@ export const getProjectProgressUpdates = createServerFn({ method: "GET" })
       .limit(100);
     if (historyError) throw new Error("Unable to load progress activity history");
 
-    const actorIds = [...new Set((history ?? [])
+    const actorIds = [...new Set<string>((history ?? [])
       .map((item: any) => item.actor_id)
-      .filter((id: any): id is string => typeof id === "string"))];
+      .filter((id: unknown): id is string => typeof id === "string"))];
     const { data: actors, error: actorsError } = actorIds.length
       ? await admin.from("profiles").select("id,full_name,email").in("id", actorIds)
       : { data: [], error: null };
