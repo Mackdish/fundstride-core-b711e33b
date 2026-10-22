@@ -140,7 +140,7 @@ CREATE POLICY "Staff manage customer portal invitations"
       SELECT 1
       FROM public.customers c
       WHERE c.id = customer_id
-        AND c.tenant_id = tenant_id
+        AND c.tenant_id = customer_portal_invitations.tenant_id
     )
   );
 
