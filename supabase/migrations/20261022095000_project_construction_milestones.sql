@@ -82,6 +82,12 @@ CREATE POLICY "Customers read published construction milestones"
     visibility = 'published'
     AND tenant_id = public.current_tenant_id()
     AND EXISTS (
+      SELECT 1 FROM public.user_roles customer_role
+      WHERE customer_role.user_id = auth.uid()
+        AND customer_role.tenant_id = public.current_tenant_id()
+        AND customer_role.role = 'customer'
+    )
+    AND EXISTS (
       SELECT 1
       FROM public.projects p
       LEFT JOIN public.customers c ON c.id = p.customer_id
