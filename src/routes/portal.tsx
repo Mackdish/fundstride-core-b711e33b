@@ -8,6 +8,7 @@ import logoUrl from "@/assets/logo.png";
 import { LogOut } from "lucide-react";
 import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -57,30 +58,9 @@ function PortalPage() {
       const projects = [...projectById.values()];
       const projectIds = projects.map((project: any) => project.id);
 
-      const [customerLoansResult, projectLoansResult] = await Promise.all([
-        custIds.length
-          ? supabase.from("loan_facilities").select("*").in("customer_id", custIds)
-          : Promise.resolve({ data: [] as any[] }),
-        projectIds.length
-          ? supabase.from("loan_facilities").select("*").in("project_id", projectIds)
-          : Promise.resolve({ data: [] as any[] }),
-      ]);
-      if ("error" in customerLoansResult && customerLoansResult.error) throw customerLoansResult.error;
-      if ("error" in projectLoansResult && projectLoansResult.error) throw projectLoansResult.error;
-
-      const loanById = new Map<string, any>();
-      for (const loan of [...(customerLoansResult.data ?? []), ...(projectLoansResult.data ?? [])] as any[]) {
-        loanById.set(loan.id, loan);
-      }
-      const loans = [...loanById.values()];
-      const loanIds = loans.map((loan: any) => loan.id);
-
-      const [ms, dd, progressResult] = await Promise.all([
+      const [ms, progressResult] = await Promise.all([
         projectIds.length
           ? supabase.from("milestones").select("*").in("project_id", projectIds)
-          : Promise.resolve({ data: [] as any[] }),
-        loanIds.length
-          ? supabase.from("drawdown_requests").select("*").in("loan_id", loanIds)
           : Promise.resolve({ data: [] as any[] }),
         projectIds.length
           ? (supabase as any).from("project_progress_updates").select("*")
@@ -89,14 +69,11 @@ function PortalPage() {
           : Promise.resolve({ data: [] as any[], error: null }),
       ]);
       if ("error" in ms && ms.error) throw ms.error;
-      if ("error" in dd && dd.error) throw dd.error;
       if (progressResult.error) throw progressResult.error;
       return {
         customers: customers ?? [],
         projects,
-        loans,
         milestones: ms.data ?? [],
-        drawdowns: dd.data ?? [],
         progressUpdates: progressResult.data ?? [],
       };
     },
@@ -112,9 +89,7 @@ function PortalPage() {
 
   const projects = data?.projects ?? [];
   const milestones = data?.milestones ?? [];
-  const loans = data?.loans ?? [];
-  const drawdowns = data?.drawdowns ?? [];
-  const progressUpdates = data?.progressUpdates ?? [];
+   const progressUpdates = data?.progressUpdates ?? [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -150,10 +125,7 @@ function PortalPage() {
             const pct = ms.length
               ? Math.round(ms.reduce((s: number, m: any) => s + (Number(m.target_pct) || 0), 0) / ms.length)
               : 0;
-            const projLoans = loans.filter((l: any) => l.customer_id === p.customer_id);
-            const drawn = drawdowns
-              .filter((d: any) => projLoans.some((l: any) => l.id === d.loan_id) && d.status === "active")
-              .reduce((s: number, d: any) => s + (Number(d.requested_amount) || 0), 0);
+            const ownsCustomerRecord = (data?.customers ?? []).some((customer: any) => customer.id === p.customer_id);
             return (
               <section key={p.id} className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
                 <div className="flex items-start justify-between gap-4">
@@ -219,20 +191,7 @@ function PortalPage() {
                   </div>
                 )}
 
-                {projLoans.length > 0 && (
-                  <div className="border-t border-slate-100 pt-3">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Financing</div>
-                    {projLoans.map((l: any) => (
-                      <div key={l.id} className="text-sm flex justify-between py-1">
-                        <span className="text-slate-700">Facility · {l.status}</span>
-                        <span className="text-slate-500">
-                          KES {(Number(l.approved_amount ?? l.requested_amount) || 0).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                    <div className="text-xs text-slate-500 mt-1">Total drawn: KES {drawn.toLocaleString()}</div>
-                  </div>
-                )}
+                {ownsCustomerRecord && <ProjectFinancialSummary projectId={p.id} />}
               </section>
             );
           })
