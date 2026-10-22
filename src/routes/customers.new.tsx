@@ -132,7 +132,6 @@ function NewCustomer() {
       }),
       status: "pending" as const,
       created_by: user?.id,
-      owner_user_id: user?.id,
       sector: v.prop_type || null,
     };
     const { data, error } = await supabase.from("customers").insert(payload).select().single();
