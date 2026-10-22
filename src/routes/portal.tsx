@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import logoUrl from "@/assets/logo.png";
 import { LogOut } from "lucide-react";
+import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -204,6 +205,11 @@ function PortalPage() {
                           </div>
                           {update.observations && <p className="text-sm text-slate-700 whitespace-pre-wrap">{update.observations}</p>}
                           {update.next_steps && <p className="text-sm text-slate-600"><span className="font-medium">Next:</span> {update.next_steps}</p>}
+                          <ProgressPhotoGallery
+                            projectId={p.id}
+                            updateId={update.id}
+                            tenantId={update.tenant_id}
+                          />
                         </article>
                       ))}
                   </div>
