@@ -298,3 +298,54 @@ export const getProjectCustomerAccess = createServerFn({ method: "GET" })
 
     return { candidates, access };
   });
+
+
+export const acceptCustomerPortalInvitation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({}).parse(input))
+  .handler(async ({ context }) => {
+    const admin = await getAdmin();
+    const { data: profile, error: profileError } = await admin
+      .from("profiles").select("tenant_id,status,email").eq("id", context.userId).maybeSingle();
+    if (profileError || !profile?.tenant_id || profile.status !== "active") {
+      throw new Error("Active customer profile required");
+    }
+
+    const { data: roles, error: rolesError } = await admin
+      .from("user_roles").select("role").eq("user_id", context.userId).eq("tenant_id", profile.tenant_id);
+    if (rolesError || !(roles ?? []).some((row: any) => row.role === "customer")) {
+      throw new Error("Customer account required");
+    }
+
+    const now = new Date().toISOString();
+    const { data: pending, error: pendingError } = await (admin as any)
+      .from("customer_portal_invitations")
+      .select("id,customer_id,email")
+      .eq("tenant_id", profile.tenant_id)
+      .eq("invited_user_id", context.userId)
+      .eq("status", "pending")
+      .gt("expires_at", now);
+    if (pendingError) throw new Error("Unable to verify the customer invitation");
+
+    for (const invitation of pending ?? []) {
+      if (String(invitation.email).toLowerCase() !== String(profile.email).toLowerCase()) continue;
+      const { data: customer, error: customerError } = await admin.from("customers")
+        .select("id,owner_user_id")
+        .eq("id", invitation.customer_id)
+        .eq("tenant_id", profile.tenant_id)
+        .maybeSingle();
+      if (customerError || !customer || customer.owner_user_id !== context.userId) continue;
+
+      const { error } = await (admin as any).from("customer_portal_invitations")
+        .update({
+          status: "accepted",
+          accepted_user_id: context.userId,
+          accepted_at: now,
+        })
+        .eq("id", invitation.id)
+        .eq("status", "pending");
+      if (error) throw new Error("Unable to mark the customer invitation as accepted");
+    }
+
+    return { ok: true };
+  });
