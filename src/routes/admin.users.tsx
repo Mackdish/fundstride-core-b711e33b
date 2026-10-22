@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -84,9 +84,18 @@ function UsersAdmin() {
         title="Users"
         description="Create accounts, assign roles, suspend or remove users."
         actions={
-          <button onClick={() => setCreateOpen(true)} className="h-10 px-4 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] flex items-center gap-2">
-            <Plus className="h-4 w-4" /> New user
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/customers"
+              className="h-10 px-4 rounded-md border border-[#1E3A5F] text-[#1E3A5F] text-sm font-medium hover:bg-slate-50 flex items-center gap-2"
+              title="Select a customer record to invite them to the customer portal"
+            >
+              <Plus className="h-4 w-4" /> Invite customer
+            </Link>
+            <button onClick={() => setCreateOpen(true)} className="h-10 px-4 rounded-md bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#2D5F8A] flex items-center gap-2">
+              <Plus className="h-4 w-4" /> New staff user
+            </button>
+          </div>
         }
       />
       <DataTable
