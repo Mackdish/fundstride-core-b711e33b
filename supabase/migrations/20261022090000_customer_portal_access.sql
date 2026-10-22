@@ -172,6 +172,12 @@ CREATE POLICY "Customers view assigned projects"
   USING (
     tenant_id = public.current_tenant_id()
     AND EXISTS (
+      SELECT 1 FROM public.user_roles customer_role
+      WHERE customer_role.user_id = auth.uid()
+        AND customer_role.tenant_id = public.current_tenant_id()
+        AND customer_role.role = 'customer'
+    )
+    AND EXISTS (
       SELECT 1
       FROM public.customer_project_access access
       WHERE access.project_id = projects.id
