@@ -32,11 +32,12 @@ Run:
 
 ```bash
 bun install --frozen-lockfile
-bun run lint
 bun run build
+bunx tsc --noEmit
+bun run lint
 ```
 
-A GitHub Actions workflow on the feature branch runs the same lint and production-build checks. No successful workflow result should be assumed until GitHub reports it.
+GitHub Actions has verified that the production client and SSR builds pass on the feature branch. TypeScript checking reports existing errors in `admin-users.functions.ts`, `audit.ts`, `auth.tsx`, and `__root.tsx`; the current repository-wide lint also fails on thousands of pre-existing formatting/style issues. These two checks are visible but non-blocking in CI until the repository baseline is cleaned up. The new feature files did not add TypeScript errors in the recorded check.
 
 ## Staging acceptance checklist
 
