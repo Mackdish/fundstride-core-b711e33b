@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS public.customer_portal_invitations (
   customer_id uuid NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
   email text NOT NULL,
   invited_by uuid REFERENCES auth.users(id) ON DELETE SET NULL DEFAULT auth.uid(),
+  invited_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   status text NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'accepted', 'revoked', 'expired')),
   accepted_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
