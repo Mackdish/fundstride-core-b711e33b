@@ -103,28 +103,64 @@ export const inviteCustomerPortalAccess = createServerFn({ method: "POST" })
         throw new Error("This account has another application role and cannot be linked as a customer.");
       }
 
+      const { data: alreadyLinkedCustomer, error: alreadyLinkedError } = await admin
+        .from("customers").select("id").eq("tenant_id", tenantId).eq("owner_user_id", userId).maybeSingle();
+      if (alreadyLinkedError) throw new Error("Unable to verify whether this account is already linked");
+      if (alreadyLinkedCustomer && alreadyLinkedCustomer.id !== customer.id) {
+        throw new Error("This account is already linked to another customer record in this company.");
+      }
+
+      const { data: invitationRecord, error: invitationError } = await (admin as any)
+        .from("customer_portal_invitations")
+        .insert({
+          tenant_id: tenantId,
+          customer_id: customer.id,
+          email,
+          invited_by: context.userId,
+          invited_user_id: userId,
+          status: "accepted",
+          accepted_user_id: userId,
+          accepted_at: new Date().toISOString(),
+          expires_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (invitationError || !invitationRecord) throw new Error("Unable to record the customer account link");
+
+      const alreadyCustomer = existingRoles.includes("customer");
+      if (!alreadyCustomer) {
+        const { error: deleteRoleError } = await admin.from("user_roles")
+          .delete().eq("user_id", userId).eq("tenant_id", tenantId).eq("role", "developer");
+        if (deleteRoleError) {
+          await (admin as any).from("customer_portal_invitations").delete().eq("id", invitationRecord.id);
+          throw new Error("Unable to update the existing account role");
+        }
+        const { error: roleInsertError } = await admin.from("user_roles")
+          .insert({ user_id: userId, role: "customer", tenant_id: tenantId });
+        if (roleInsertError) {
+          if (existingRoles.includes("developer")) {
+            await admin.from("user_roles").insert({ user_id: userId, role: "developer", tenant_id: tenantId });
+          }
+          await (admin as any).from("customer_portal_invitations").delete().eq("id", invitationRecord.id);
+          throw new Error("Unable to assign customer permissions to this account");
+        }
+      }
+
       const { error: linkError } = await admin.from("customers")
-        .update({ owner_user_id: userId, email: customer.email ?? email })
-        .eq("id", customer.id);
-      if (linkError) throw new Error("Unable to link the existing account to this customer");
+        .update({ owner_user_id: userId, email })
+        .eq("id", customer.id)
+        .eq("tenant_id", tenantId);
+      if (linkError) {
+        if (!alreadyCustomer) {
+          await admin.from("user_roles").delete().eq("user_id", userId).eq("tenant_id", tenantId).eq("role", "customer");
+          if (existingRoles.includes("developer")) {
+            await admin.from("user_roles").insert({ user_id: userId, role: "developer", tenant_id: tenantId });
+          }
+        }
+        await (admin as any).from("customer_portal_invitations").delete().eq("id", invitationRecord.id);
+        throw new Error("Unable to link the existing account to this customer");
+      }
 
-      await admin.from("user_roles").delete().eq("user_id", userId).in("role", ["developer", "customer"]);
-      const { error: roleInsertError } = await admin.from("user_roles")
-        .insert({ user_id: userId, role: "customer", tenant_id: tenantId });
-      if (roleInsertError) throw new Error("Account linked, but customer permissions could not be assigned. Please contact an administrator.");
-
-      const { error: invitationError } = await (admin as any).from("customer_portal_invitations").insert({
-        tenant_id: tenantId,
-        customer_id: customer.id,
-        email,
-        invited_by: context.userId,
-        invited_user_id: userId,
-        status: "accepted",
-        accepted_user_id: userId,
-        accepted_at: new Date().toISOString(),
-        expires_at: new Date().toISOString(),
-      });
-      if (invitationError) throw new Error("Account linked, but the access audit record could not be saved.");
       return { ok: true, mode: "linked_existing" as const, email };
     }
 
@@ -180,7 +216,7 @@ export const inviteCustomerPortalAccess = createServerFn({ method: "POST" })
     }
 
     const { error: linkError } = await admin.from("customers")
-      .update({ owner_user_id: userId, email: customer.email ?? email })
+      .update({ owner_user_id: userId, email })
       .eq("id", customer.id);
     if (linkError) {
       await (admin as any).from("customer_portal_invitations")
