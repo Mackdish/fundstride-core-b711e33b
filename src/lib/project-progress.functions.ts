@@ -8,7 +8,7 @@ async function getAdmin() {
 }
 
 const PROGRESS_STAFF_ROLES = new Set([
-  "platform_admin", "super_admin, "admin", "executive", "operations", "projects",
+  "platform_admin", "super_admin", "admin", "executive", "operations", "projects",
   "site_monitoring_officer", "operations_officer", "credit_officer",
 ]);
 
