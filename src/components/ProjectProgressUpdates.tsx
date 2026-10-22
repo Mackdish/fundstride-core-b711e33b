@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { FilePlus2, PencilLine, Send } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { getProjectProgressUpdates, saveProjectProgressUpdate } from "@/lib/project-progress.functions";
+import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
 
 type ProgressStatus = "on_track" | "at_risk" | "delayed" | "completed";
 type PublicationAction = "draft" | "publish";
@@ -249,6 +250,14 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
               {update.next_steps && (
                 <p className="text-sm text-slate-600"><span className="font-medium">Next steps:</span> {update.next_steps}</p>
               )}
+              <div className="border-t border-slate-100 pt-3">
+                <ProgressPhotoGallery
+                  projectId={projectId}
+                  updateId={update.id}
+                  tenantId={update.tenant_id}
+                  editable
+                />
+              </div>
             </article>
           ))}
         </div>
