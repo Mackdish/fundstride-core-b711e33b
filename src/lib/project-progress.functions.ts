@@ -103,6 +103,7 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
 
     let saved: any;
     let oldValue: any = null;
+    let previousRow: any = null;
     let historyAction: "created" | "updated" | "published" = publish ? "published" : "created";
 
     if (data.update_id) {
@@ -118,6 +119,7 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
       if (existing.publication_status === "published") {
         throw new Error("Published updates are immutable. Create a new correction update instead.");
       }
+      previousRow = existing;
       oldValue = snapshot(existing);
       historyAction = publish ? "published" : "updated";
       const { data: updated, error } = await (admin as any)
@@ -160,9 +162,38 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
         new_value: snapshot(saved),
       });
     if (historyError) {
-      // Do not claim a successful publish when its audit record was not saved.
-      // The saved row remains visible to staff and can be reviewed/retried.
-      throw new Error("Progress was saved, but its audit record failed. Do not retry blindly; refresh the project and contact an administrator.");
+      // Compensate so an update is not published without its audit record.
+      // The write and history insert are separate PostgREST requests, so this
+      // rollback is best-effort; failures are surfaced explicitly for review.
+      let rollbackError: any = null;
+      if (previousRow) {
+        const { error } = await (admin as any).from("project_progress_updates")
+          .update({
+            progress_percent: previousRow.progress_percent,
+            stage: previousRow.stage,
+            status: previousRow.status,
+            observations: previousRow.observations,
+            next_steps: previousRow.next_steps,
+            publication_status: previousRow.publication_status,
+            published_by: previousRow.published_by,
+            published_at: previousRow.published_at,
+            updated_by: previousRow.updated_by,
+            updated_at: previousRow.updated_at,
+            version: previousRow.version,
+            created_by: previousRow.created_by,
+          })
+          .eq("id", saved.id)
+          .eq("tenant_id", tenantId);
+        rollbackError = error;
+      } else {
+        const { error } = await (admin as any).from("project_progress_updates")
+          .delete().eq("id", saved.id).eq("tenant_id", tenantId);
+        rollbackError = error;
+      }
+      if (rollbackError) {
+        throw new Error("Progress was saved but its audit record and rollback both failed. Stop editing this project and contact an administrator.");
+      }
+      throw new Error("Progress update was not published because its audit record could not be saved. Please retry.");
     }
 
     return { ok: true, update: saved };
