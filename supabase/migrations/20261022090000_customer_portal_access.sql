@@ -1,3 +1,31 @@
+-- Tenant-scoped staff authorization for customer/project administration.
+CREATE OR REPLACE FUNCTION public.is_tenant_staff(_user_id uuid, _tenant_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    JOIN public.user_roles r ON r.user_id = p.id
+    WHERE p.id = _user_id
+      AND p.tenant_id = _tenant_id
+      AND p.status = 'active'
+      AND r.tenant_id = _tenant_id
+      AND r.role IN (
+        'super_admin', 'platform_admin', 'admin', 'executive',
+        'finance', 'finance_officer', 'credit', 'credit_officer',
+        'operations', 'operations_officer', 'projects',
+        'site_monitoring_officer', 'risk_compliance_officer', 'sales'
+      )
+  )
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.is_tenant_staff(uuid, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_tenant_staff(uuid, uuid) TO authenticated;
+
 -- Module 1: customer portal access, invitations, and explicit project grants.
 -- Additive only: preserves existing customer/project records and the owner_user_id model.
 
@@ -59,7 +87,7 @@ BEGIN
     WHERE r.user_id = NEW.user_id
       AND r.tenant_id = project_tenant
       AND r.role = 'customer'
-  ) OR public.is_staff(NEW.user_id) THEN
+  ) OR public.is_tenant_staff(NEW.user_id, project_tenant) THEN
     RAISE EXCEPTION 'Only customer accounts can be assigned customer project access';
   END IF;
 
@@ -86,7 +114,7 @@ CREATE POLICY "Staff manage customer project access"
   FOR ALL TO authenticated
   USING (
     tenant_id = public.current_tenant_id()
-    AND public.is_staff(auth.uid())
+    AND public.is_tenant_staff(auth.uid(), tenant_id)
   )
   WITH CHECK (
     tenant_id = public.current_tenant_id()
