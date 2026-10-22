@@ -4,7 +4,7 @@ import { useAuth, ROLE_LABELS, AppRole } from "@/lib/auth";
 import {
   LayoutDashboard, Users, Building2, FileCheck2, Banknote, Wallet, MapPin,
   HardHat, CreditCard, ShieldAlert, FileText, BarChart3, Settings, LogOut,
-  Bell, Menu, X, ChevronRight, Briefcase, Target,
+  Menu, X, ChevronRight, Briefcase, Target,
 } from "lucide-react";
 import logoUrl from "@/assets/logo.png";
 import { InstallAppButton } from "@/components/InstallAppButton";
