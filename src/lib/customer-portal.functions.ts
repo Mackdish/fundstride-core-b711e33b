@@ -191,6 +191,15 @@ export const inviteCustomerPortalAccess = createServerFn({ method: "POST" })
     }
 
     userId = invited.user.id;
+    const { error: invitationUpdateError } = await (admin as any).from("customer_portal_invitations")
+      .update({ invited_user_id: userId }).eq("id", invitation.id);
+    if (invitationUpdateError) {
+      await (admin as any).from("customer_portal_invitations")
+        .update({ status: "revoked" }).eq("id", invitation.id);
+      await admin.auth.admin.deleteUser(userId);
+      throw new Error("The invitation was rolled back because its tracking record could not be updated.");
+    }
+
     const { error: profileError } = await admin.from("profiles").upsert({
       id: userId,
       email,
@@ -205,7 +214,14 @@ export const inviteCustomerPortalAccess = createServerFn({ method: "POST" })
       throw new Error("The invitation could not be configured. Please retry after checking the profile schema.");
     }
 
-    await admin.from("user_roles").delete().eq("user_id", userId).eq("role", "developer");
+    const { error: deleteRoleError } = await admin.from("user_roles").delete()
+      .eq("user_id", userId).eq("tenant_id", tenantId).eq("role", "developer");
+    if (deleteRoleError) {
+      await (admin as any).from("customer_portal_invitations")
+        .update({ status: "revoked" }).eq("id", invitation.id);
+      await admin.auth.admin.deleteUser(userId);
+      throw new Error("The invitation was rolled back because the default account role could not be removed.");
+    }
     const { error: roleError } = await admin.from("user_roles")
       .insert({ user_id: userId, role: "customer", tenant_id: tenantId });
     if (roleError) {
@@ -223,12 +239,6 @@ export const inviteCustomerPortalAccess = createServerFn({ method: "POST" })
         .update({ status: "revoked" }).eq("id", invitation.id);
       await admin.auth.admin.deleteUser(userId);
       throw new Error("The invitation was rolled back because the customer record could not be linked.");
-    }
-
-    const { error: invitationUpdateError } = await (admin as any).from("customer_portal_invitations")
-      .update({ invited_user_id: userId }).eq("id", invitation.id);
-    if (invitationUpdateError) {
-      throw new Error("The customer was invited, but the invitation record needs administrator review.");
     }
 
     return { ok: true, mode: "invited_new" as const, email };
