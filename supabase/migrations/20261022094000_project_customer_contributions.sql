@@ -77,6 +77,12 @@ CREATE POLICY "Customers read confirmed own project contributions"
     status = 'confirmed'
     AND tenant_id = public.current_tenant_id()
     AND EXISTS (
+      SELECT 1 FROM public.user_roles customer_role
+      WHERE customer_role.user_id = auth.uid()
+        AND customer_role.tenant_id = public.current_tenant_id()
+        AND customer_role.role = 'customer'
+    )
+    AND EXISTS (
       SELECT 1
       FROM public.projects p
       JOIN public.customers c ON c.id = p.customer_id
