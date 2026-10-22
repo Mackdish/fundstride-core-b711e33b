@@ -9,6 +9,7 @@ import { LogOut } from "lucide-react";
 import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProjectFinancialSummary } from "@/components/ProjectFinancialSummary";
+import { ConstructionMilestones } from "@/components/ConstructionMilestones";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -148,7 +149,7 @@ function PortalPage() {
 
                 {ms.length > 0 && (
                   <div className="border-t border-slate-100 pt-3">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Milestones</div>
+                    <div className="text-xs font-medium text-slate-500 mb-2">Financing milestones</div>
                     <ul className="space-y-1 text-sm">
                       {ms.map((m: any) => (
                         <li key={m.id} className="flex justify-between">
@@ -191,6 +192,7 @@ function PortalPage() {
                   </div>
                 )}
 
+                <ConstructionMilestones projectId={p.id} />
                 {ownsCustomerRecord && <ProjectFinancialSummary projectId={p.id} />}
               </section>
             );
