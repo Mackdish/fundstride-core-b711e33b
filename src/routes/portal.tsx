@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import logoUrl from "@/assets/logo.png";
 import { LogOut } from "lucide-react";
 import { ProgressPhotoGallery } from "@/components/ProgressPhotoGallery";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -126,9 +127,12 @@ function PortalPage() {
               <div className="text-xs text-white/70">{user.email}</div>
             </div>
           </div>
-          <button onClick={signOut} className="flex items-center gap-2 text-sm text-white/80 hover:text-white">
-            <LogOut className="h-4 w-4" />Sign out
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell userId={user.id} />
+            <button onClick={signOut} className="flex items-center gap-2 text-sm text-white/80 hover:text-white">
+              <LogOut className="h-4 w-4" />Sign out
+            </button>
+          </div>
         </div>
       </header>
 
