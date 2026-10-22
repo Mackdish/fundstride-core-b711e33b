@@ -150,7 +150,8 @@ CREATE POLICY "Read authorized progress photos"
         AND (
           public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
           OR (
-            u.publication_status = 'published'
+            public.has_role(auth.uid(), 'customer'::public.app_role)
+            AND u.publication_status = 'published'
             AND (
               c.owner_user_id = auth.uid()
               OR EXISTS (
