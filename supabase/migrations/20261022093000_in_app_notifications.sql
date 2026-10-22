@@ -20,7 +20,8 @@ CREATE INDEX IF NOT EXISTS in_app_notifications_user_unread_idx
   WHERE read_at IS NULL;
 
 ALTER TABLE public.in_app_notifications ENABLE ROW LEVEL SECURITY;
-GRANT SELECT, UPDATE ON public.in_app_notifications TO authenticated;
+GRANT SELECT ON public.in_app_notifications TO authenticated;
+GRANT UPDATE (read_at) ON public.in_app_notifications TO authenticated;
 GRANT ALL ON public.in_app_notifications TO service_role;
 
 DROP POLICY IF EXISTS "Users read own in-app notifications" ON public.in_app_notifications;
