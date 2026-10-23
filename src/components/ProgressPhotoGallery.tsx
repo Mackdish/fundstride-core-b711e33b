@@ -163,7 +163,7 @@ export function ProgressPhotoGallery({
             <figure key={photo.id} className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
               {photo.signedUrl ? (
                 <div className="bg-slate-100">
-                  {EXTENSION_BY_TYPE[photo.storage_path?.split(".").pop() === "mp4" ? "video/mp4" : photo.storage_path?.split(".").pop() === "webm" ? "video/webm" : photo.storage_path?.split(".").pop() === "mov" ? "video/quicktime" : "image/jpeg"]?.startsWith("video") ? (
+                  {/\.(mp4|webm|mov)$/i.test(photo.storage_path ?? "") ? (
                     <video src={photo.signedUrl} controls preload="metadata" className="max-h-64 w-full" aria-label={photo.caption || "Project progress video"} />
                   ) : (
                     <a href={photo.signedUrl} target="_blank" rel="noreferrer" className="block">
