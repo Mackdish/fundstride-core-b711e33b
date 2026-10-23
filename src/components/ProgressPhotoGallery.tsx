@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ImagePlus, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { attachProgressPhoto, deleteProgressPhoto } from "@/lib/project-progress.functions";
 
@@ -12,11 +12,14 @@ type ProgressPhotoGalleryProps = {
   editable?: boolean;
 };
 
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+const MAX_MEDIA_BYTES = 100 * 1024 * 1024;
 const EXTENSION_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/quicktime": "mov",
 };
 
 export function ProgressPhotoGallery({
@@ -66,9 +69,9 @@ export function ProgressPhotoGallery({
       return;
     }
 
-    const invalid = files.find((file) => !EXTENSION_BY_TYPE[file.type] || file.size > MAX_PHOTO_BYTES);
+    const invalid = files.find((file) => !EXTENSION_BY_TYPE[file.type] || file.size > MAX_MEDIA_BYTES);
     if (invalid) {
-      toast.error("Use JPEG, PNG, or WebP images up to 10 MB each.");
+      toast.error("Use JPEG, PNG, WebP, MP4, WebM, or MOV files up to 100 MB each.");
       return;
     }
 
@@ -104,7 +107,7 @@ export function ProgressPhotoGallery({
       }
 
       if (uploadedCount > 0) {
-        toast.success(`${uploadedCount} photo${uploadedCount === 1 ? "" : "s"} uploaded`);
+        toast.success(`${uploadedCount} project file${uploadedCount === 1 ? "" : "s"} uploaded`);
         setCaption("");
         await queryClient.invalidateQueries({ queryKey });
       }
@@ -118,23 +121,23 @@ export function ProgressPhotoGallery({
     <div className="space-y-3">
       {editable && (
         <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 space-y-2">
-          <label className="block text-xs font-medium text-slate-600" htmlFor={`photo-caption-${updateId}`}>
+          <label className="block text-xs font-medium text-slate-600" htmlFor={`media-caption-${updateId}`}>
             Caption (optional)
           </label>
           <input
-            id={`photo-caption-${updateId}`}
+            id={`media-caption-${updateId}`}
             value={caption}
             maxLength={500}
             onChange={(event) => setCaption(event.target.value)}
-            placeholder="Describe the site photos"
+            placeholder="Describe the site photos or video"
             className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
           />
           <label className={`inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm ${uploading ? "opacity-50" : "hover:bg-slate-100"}`}>
             <ImagePlus className="h-4 w-4" />
-            {uploading ? "Uploading photos…" : "Add photos"}
+            {uploading ? "Uploading files…" : "Add photos or videos"}
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
               multiple
               disabled={uploading}
               className="hidden"
@@ -144,7 +147,7 @@ export function ProgressPhotoGallery({
               }}
             />
           </label>
-          <p className="text-xs text-slate-500">Multiple photos supported. JPEG, PNG or WebP; maximum 10 MB per image.</p>
+          <p className="text-xs text-slate-500">Multiple photos and videos supported. Images: JPEG, PNG, WebP. Videos: MP4, WebM, MOV. Maximum 100 MB per file.</p>
         </div>
       )}
 
@@ -155,15 +158,21 @@ export function ProgressPhotoGallery({
       ) : photos.length === 0 ? (
         editable ? <p className="text-xs text-slate-500">No photos attached to this update yet.</p> : null
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {photos.map((photo: any) => (
             <figure key={photo.id} className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
               {photo.signedUrl ? (
-                <a href={photo.signedUrl} target="_blank" rel="noreferrer" className="block">
-                  <img src={photo.signedUrl} alt={photo.caption || "Project progress photo"} loading="lazy" className="h-32 w-full object-cover" />
-                </a>
+                <div className="bg-slate-100">
+                  {EXTENSION_BY_TYPE[photo.storage_path?.split(".").pop() === "mp4" ? "video/mp4" : photo.storage_path?.split(".").pop() === "webm" ? "video/webm" : photo.storage_path?.split(".").pop() === "mov" ? "video/quicktime" : "image/jpeg"]?.startsWith("video") ? (
+                    <video src={photo.signedUrl} controls preload="metadata" className="max-h-64 w-full" aria-label={photo.caption || "Project progress video"} />
+                  ) : (
+                    <a href={photo.signedUrl} target="_blank" rel="noreferrer" className="block">
+                      <img src={photo.signedUrl} alt={photo.caption || "Project progress photo"} loading="lazy" className="h-32 w-full object-cover" />
+                    </a>
+                  )}
+                </div>
               ) : (
-                <div className="h-32 bg-slate-100 flex items-center justify-center text-xs text-slate-500">Photo unavailable</div>
+                <div className="h-32 bg-slate-100 flex items-center justify-center text-xs text-slate-500">Media unavailable</div>
               )}
               {(photo.caption || editable) && (
                 <figcaption className="p-2 flex items-start justify-between gap-2">
@@ -171,8 +180,8 @@ export function ProgressPhotoGallery({
                   {editable && (
                     <button
                       type="button"
-                      title="Delete photo"
-                      aria-label="Delete photo"
+                      title="Delete media"
+                      aria-label="Delete media"
                       onClick={() => {
                         if (confirm("Delete this progress photo?")) deleteMutation.mutate(photo.id);
                       }}
