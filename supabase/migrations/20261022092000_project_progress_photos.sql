@@ -1,14 +1,16 @@
--- Module 3: private progress photo storage and project-linked photo metadata.
+-- Module 3: private progress media storage and project-linked media metadata.
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'progress-photos',
   'progress-photos',
   false,
-  10485760,
-  ARRAY['image/jpeg', 'image/png', 'image/webp']
+  104857600,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime']
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 CREATE TABLE IF NOT EXISTS public.project_progress_photos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,7 +69,7 @@ CREATE TRIGGER project_progress_photos_set_scope
 REVOKE EXECUTE ON FUNCTION public.set_project_progress_photo_scope()
   FROM PUBLIC, anon, authenticated;
 
-DROP POLICY IF EXISTS "Staff read progress photos" ON public.project_progress_photos;
+DROP POLICY IF EXISTS "Staff read progress media" ON public.project_progress_photos;
 CREATE POLICY "Staff read progress photos"
   ON public.project_progress_photos
   FOR SELECT TO authenticated
@@ -76,7 +78,7 @@ CREATE POLICY "Staff read progress photos"
     AND public.can_manage_project_progress(auth.uid(), tenant_id)
   );
 
-DROP POLICY IF EXISTS "Customers read published progress photos" ON public.project_progress_photos;
+DROP POLICY IF EXISTS "Customers read published progress media" ON public.project_progress_photos;
 CREATE POLICY "Customers read published progress photos"
   ON public.project_progress_photos
   FOR SELECT TO authenticated
@@ -112,7 +114,7 @@ CREATE POLICY "Customers read published progress photos"
 
 -- All storage objects are private. Paths are:
 -- <tenant UUID>/<project UUID>/<progress-update UUID>/<filename>
-DROP POLICY IF EXISTS "Staff upload progress photos" ON storage.objects;
+DROP POLICY IF EXISTS "Staff upload progress media" ON storage.objects;
 CREATE POLICY "Staff upload progress photos"
   ON storage.objects
   FOR INSERT TO authenticated
@@ -131,7 +133,7 @@ CREATE POLICY "Staff upload progress photos"
     )
   );
 
-DROP POLICY IF EXISTS "Read authorized progress photos" ON storage.objects;
+DROP POLICY IF EXISTS "Read authorized progress media" ON storage.objects;
 CREATE POLICY "Read authorized progress photos"
   ON storage.objects
   FOR SELECT TO authenticated
@@ -168,7 +170,7 @@ CREATE POLICY "Read authorized progress photos"
     )
   );
 
-DROP POLICY IF EXISTS "Staff update progress photos" ON storage.objects;
+DROP POLICY IF EXISTS "Staff update progress media" ON storage.objects;
 CREATE POLICY "Staff update progress photos"
   ON storage.objects
   FOR UPDATE TO authenticated
@@ -183,7 +185,7 @@ CREATE POLICY "Staff update progress photos"
     AND public.can_manage_project_progress(auth.uid(), public.current_tenant_id())
   );
 
-DROP POLICY IF EXISTS "Staff delete progress photos" ON storage.objects;
+DROP POLICY IF EXISTS "Staff delete progress media" ON storage.objects;
 CREATE POLICY "Staff delete progress photos"
   ON storage.objects
   FOR DELETE TO authenticated
