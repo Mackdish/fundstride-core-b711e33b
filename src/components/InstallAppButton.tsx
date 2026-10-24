@@ -8,11 +8,9 @@ import {
 } from "@/lib/pwa";
 
 /**
- * In-app "Install app" button. Behavior:
- *  - Hidden if the app is already installed.
- *  - If the browser has fired `beforeinstallprompt`, clicking triggers the native prompt.
- *  - Otherwise (iOS Safari, unsupported browsers, or preview iframe), clicking shows
- *    guidance so the user knows how to install on their device.
+ * Installs BuildTrack360 as a PWA where the browser supports it.
+ * A browser may withhold the native prompt in previews, embedded frames,
+ * or before its installability checks have completed.
  */
 export function InstallAppButton({ className = "" }: { className?: string }) {
   const [installed, setInstalled] = useState(false);
@@ -38,17 +36,41 @@ export function InstallAppButton({ className = "" }: { className?: string }) {
 
   const handleClick = async () => {
     const outcome = await promptInstall();
-    if (outcome === "accepted") toast.success("Installing BuildTrack360…");
-    else if (outcome === "dismissed") toast("Install cancelled");
-    else {
-      const ua = navigator.userAgent;
-      const isIOS = /iPhone|iPad|iPod/.test(ua);
-      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-      if (isIOS || isSafari) {
-        toast.info("On iOS: open in Safari, then tap Share → Add to Home Screen.", { duration: 8000 });
-      } else {
-        toast.info("Install isn't available here. Open the published site in Chrome/Edge, then use the install icon in the address bar.", { duration: 8000 });
-      }
+    if (outcome === "accepted") {
+      toast.success("Installing BuildTrack360…");
+      return;
+    }
+    if (outcome === "dismissed") {
+      toast("Install cancelled");
+      return;
+    }
+
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+    const inFrame = window.self !== window.top;
+
+    if (inFrame) {
+      toast.info(
+        "You're viewing an embedded preview. Open https://buildtrack360.co.ke directly in your browser to install BuildTrack360.",
+        { duration: 10000 }
+      );
+    } else if (isIOS || isSafari) {
+      toast.info(
+        "To install: open this site in Safari, tap Share, then choose Add to Home Screen.",
+        { duration: 10000 }
+      );
+    } else if (isAndroid) {
+      toast.info(
+        "In Chrome, tap ⋮ and choose Install app or Add to Home screen. If it is missing, refresh the published site and try again.",
+        { duration: 10000 }
+      );
+    } else {
+      toast.info(
+        "Open the published site directly in Chrome or Edge. Use the Install icon in the address bar, or open the browser menu and choose Install BuildTrack360. If that option is missing, refresh the site and try again.",
+        { duration: 10000 }
+      );
     }
   };
 
