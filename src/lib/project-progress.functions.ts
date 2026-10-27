@@ -301,8 +301,8 @@ export const attachProgressPhoto = createServerFn({ method: "POST" })
 
     const prefix = `${tenantId}/${data.project_id}/${data.update_id}/`;
     const filename = data.storage_path.startsWith(prefix) ? data.storage_path.slice(prefix.length) : "";
-    if (!/^[0-9a-f-]{36}\.(jpg|png|webp)$/i.test(filename)) {
-      throw new Error("Invalid photo path. Upload the photo again from this project.");
+    if (!/^[0-9a-f-]{36}\.(jpg|png|webp|mp4|webm|mov)$/i.test(filename)) {
+      throw new Error("Invalid media path. Upload the photo or video again from this project.");
     }
 
     const { data: objects, error: storageError } = await admin.storage
