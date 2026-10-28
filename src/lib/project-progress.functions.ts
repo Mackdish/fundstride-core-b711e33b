@@ -141,9 +141,6 @@ export const saveProjectProgressUpdate = createServerFn({ method: "POST" })
         .maybeSingle();
       if (existingError) throw new Error("Unable to verify the progress update");
       if (!existing) throw new Error("Progress update not found");
-      if (existing.publication_status === "published") {
-        throw new Error("Published updates are immutable. Create a new correction update instead.");
-      }
       previousRow = existing;
       oldValue = snapshot(existing);
       historyAction = publish ? "published" : "updated";
