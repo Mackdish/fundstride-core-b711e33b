@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FilePlus2, PencilLine, Send, History } from "lucide-react";
@@ -29,12 +29,19 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
+  const formPanelRef = useRef<HTMLDivElement | null>(null);
   const queryKey = ["project-progress-updates", projectId];
 
   const { data, isLoading, error } = useQuery({
     queryKey,
     queryFn: () => getProjectProgressUpdates({ data: { project_id: projectId } }),
   });
+
+  useEffect(() => {
+    if (formOpen) {
+      formPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [formOpen, form.update_id]);
 
   const saveMutation = useMutation({
     mutationFn: (action: PublicationAction) => saveProjectProgressUpdate({
@@ -119,7 +126,7 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
       </div>
 
       {formOpen && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+        <div ref={formPanelRef} className="scroll-mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h4 className="font-medium text-slate-900">{form.update_id ? "Edit progress update" : "New progress update"}</h4>
             <button
