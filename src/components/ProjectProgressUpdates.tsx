@@ -65,6 +65,9 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
 
   const updates = data?.updates ?? [];
   const history = data?.history ?? [];
+  const editingPublished = updates.some(
+    (update: any) => update.id === form.update_id && update.publication_status === "published",
+  );
 
   function editDraft(update: any) {
     setForm({
@@ -102,7 +105,7 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
         <div>
           <h3 className="font-semibold text-slate-900">Construction progress</h3>
           <p className="text-sm text-slate-500 mt-1">
-            Save a private draft or publish directly to the customer portal. Published updates cannot be silently overwritten.
+            Save drafts or publish progress to the customer portal. Editing an existing update records the change in activity history.
           </p>
         </div>
         <button
@@ -118,7 +121,7 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
       {formOpen && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h4 className="font-medium text-slate-900">{form.update_id ? "Edit draft" : "New progress update"}</h4>
+            <h4 className="font-medium text-slate-900">{form.update_id ? "Edit progress update" : "New progress update"}</h4>
             <button
               type="button"
               onClick={() => { setForm(emptyForm); setFormOpen(false); }}
@@ -187,14 +190,16 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
             </label>
           </div>
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <button
-              type="button"
-              disabled={saveMutation.isPending}
-              onClick={() => save("draft")}
-              className="h-10 px-4 rounded-md border border-slate-300 bg-white text-sm font-medium disabled:opacity-50"
-            >
-              {saveMutation.isPending ? "Saving…" : "Save draft"}
-            </button>
+            {!editingPublished && (
+              <button
+                type="button"
+                disabled={saveMutation.isPending}
+                onClick={() => save("draft")}
+                className="h-10 px-4 rounded-md border border-slate-300 bg-white text-sm font-medium disabled:opacity-50"
+              >
+                {saveMutation.isPending ? "Saving…" : "Save draft"}
+              </button>
+            )}
             <button
               type="button"
               disabled={saveMutation.isPending}
@@ -202,7 +207,7 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
               className="h-10 px-4 rounded-md bg-[#1E3A5F] text-white text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
-              {saveMutation.isPending ? "Publishing…" : "Publish update"}
+              {saveMutation.isPending ? (editingPublished ? "Saving…" : "Publishing…") : (editingPublished ? "Save changes" : "Publish update")}
             </button>
           </div>
         </div>
@@ -231,15 +236,13 @@ export function ProjectProgressUpdates({ projectId }: { projectId: string }) {
                   <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs text-blue-800">
                     {statusLabels[update.status as ProgressStatus] ?? update.status}
                   </span>
-                  {update.publication_status === "draft" && (
-                    <button
-                      type="button"
-                      onClick={() => editDraft(update)}
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs hover:bg-slate-50"
-                    >
-                      <PencilLine className="h-3.5 w-3.5" /> Edit draft
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => editDraft(update)}
+                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs hover:bg-slate-50"
+                  >
+                    <PencilLine className="h-3.5 w-3.5" /> {update.publication_status === "published" ? "Edit update" : "Edit draft"}
+                  </button>
                 </div>
               </div>
               <div>
